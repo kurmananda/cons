@@ -71,10 +71,10 @@ const Nav = () => {
 
         {/* Right Section: Utility Icons & Menu Toggle */}
         <div className="flex items-center gap-1 md:gap-2 z-50">
-          {/* Profile */}
+          {/* Profile - Hidden on Mobile */}
           <Link
             href="/profile"
-            className="cursor-target text-white hover:text-white transition-colors p-1 md:p-1.5 hover:bg-white/10 rounded-full">
+            className="hidden md:flex cursor-target text-white hover:text-white transition-colors p-1 md:p-1.5 hover:bg-white/10 rounded-full">
             <Avatar className="w-6 h-6 md:w-7.5 md:h-7.5 bg-white/20">
               <AvatarImage src="" />
               <AvatarFallback className="text-[10px] bg-transparent text-white font-black">
@@ -83,11 +83,11 @@ const Nav = () => {
             </Avatar>
           </Link>
           
-          {/* Store */}
+          {/* Store - Hidden on Mobile in Navbar (Moved to Menu) */}
           <Link
             href="/store"
             string="magnetic"
-            className="cursor-target relative group overflow-hidden rounded-lg p-1.5 flex items-center justify-center">
+            className="hidden md:flex cursor-target relative group overflow-hidden rounded-lg p-1.5 flex items-center justify-center">
             <span className="absolute inset-0 w-full h-full bg-cyan-400 transform -translate-y-[101%] group-hover:translate-y-0 transition-transform duration-[400ms] ease-out rounded-lg" />
             <ShoppingBag
               className="relative z-10 w-6 h-6 md:w-7 md:h-7 text-white group-hover:text-black transition-colors duration-300"
@@ -125,217 +125,136 @@ const Nav = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="fixed inset-0 w-full h-[100dvh] bg-[#050505] z-[45] flex flex-col md:flex-row pointer-events-auto overflow-hidden">
+            className="fixed inset-0 w-full h-[100dvh] bg-[#1a1d13] z-[45] flex flex-col pointer-events-auto overflow-hidden">
             
-            {/* Background Animation */}
-            <div className="absolute inset-0 w-full h-full z-0 opacity-60 pointer-events-auto rotate-180 scale-150 overflow-hidden">
-              <Threads
-                color={[0.0, 0.5, 0.5]}
-                amplitude={2}
-                distance={0.4}
-                enableMouseInteraction={true}
-              />
+            {/* Background Decoration: Topographic/Contour Lines Overlay */}
+            <div className="absolute inset-0 w-full h-full z-0 opacity-20 pointer-events-none mix-blend-overlay overflow-hidden">
+              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <filter id="noise">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" stitchTiles="stitch" />
+                  <feDisplacementMap in="SourceGraphic" scale="20" />
+                </filter>
+                <path d="M-100,200 Q300,50 600,300 T1200,100" fill="none" stroke="white" strokeWidth="1" opacity="0.3" />
+                <path d="M-100,400 Q400,200 800,500 T1400,200" fill="none" stroke="white" strokeWidth="1" opacity="0.2" />
+                <path d="M-100,600 Q500,400 900,700 T1500,400" fill="none" stroke="white" strokeWidth="1" opacity="0.1" />
+                <path d="M0,0 L100%,100%" stroke="none" filter="url(#noise)" opacity="0.1" />
+              </svg>
             </div>
 
-            {/* Back Button */}
-            <button
-              onClick={() => setIsMenuOpen(false)}
-              className="cursor-target absolute top-6 left-6 md:top-10 md:left-10 z-[100] flex items-center gap-2 text-white/60 hover:text-white font-syncopate tracking-[0.3em] text-xs uppercase transition-all duration-300 group cursor-pointer">
-              <span className="text-lg leading-none transition-transform duration-300 group-hover:-translate-x-1">
-                &larr;
-              </span>
-              <span>BACK</span>
-            </button>
+            {/* Top Bar Actions */}
+            <div className="relative z-[100] w-full flex justify-between items-center py-6 px-6 md:px-10">
+              {/* Store Button (Mobile Version) */}
+              <Link
+                href="/store"
+                onClick={() => setIsMenuOpen(false)}
+                className="cursor-target flex items-center gap-2 bg-[#C6FF00] text-black px-4 py-2.5 rounded-lg font-bold text-sm tracking-tighter uppercase transition-transform hover:scale-105 active:scale-95"
+              >
+                <ShoppingBag className="w-5 h-5" strokeWidth={2.5} />
+                <span>STORE</span>
+              </Link>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="cursor-target w-11 h-11 bg-white hover:bg-white/90 text-black flex items-center justify-center rounded-xl transition-all duration-300 active:scale-90"
+              >
+                <span className="text-2xl font-light">×</span>
+              </button>
+            </div>
 
             {/* Content Container */}
-            <div className="relative z-10 w-full min-h-full flex flex-col justify-center px-8 md:px-[10vw] pt-24 md:pt-0 pointer-events-none [&>*]:pointer-events-auto">
-              <div className="flex flex-col md:flex-row md:items-end justify-between w-full mt-10 mb-10">
-                
-                {/* Visual Accent: Large Logo */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="hidden md:flex w-1/2 justify-start pb-4">
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-center items-center px-8 text-center">
+              
+              {/* Primary Navigation Links */}
+              <div className="flex flex-col items-center gap-6 md:gap-8">
+                {[
+                  { label: "HOME", path: "/" },
+                  { label: "ON TRACK", path: "/online-workshops" },
+                  { label: "OFF TRACK", path: "/events" },
+                  { label: "CALENDAR", path: "/accommodation" },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{
+                      delay: 0.1 + i * 0.05,
+                      duration: 0.5,
+                      ease: "easeOut",
+                    }}
+                  >
+                    <Link
+                      href={item.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="cursor-target relative group py-2"
+                    >
+                      <span className="font-syncopate font-black text-4xl sm:text-5xl md:text-6xl tracking-tight uppercase text-[#e2e8f0]/90 transition-colors group-hover:text-white">
+                        {item.label}
+                      </span>
+                      {/* Animated Strikethrough-like indicator (Wave) */}
+                      <motion.div 
+                        className="absolute left-0 bottom-1/2 w-full h-[6px] bg-[#C6FF00] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                        initial={{ scaleX: 0 }}
+                        whileHover={{ scaleX: 1 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originX: 0 }}
+                      />
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Decorative Middle Section (Replaces Logo) */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-16 mb-4"
+              >
+                <div className="w-16 h-16 md:w-20 md:h-20 border-2 border-white/20 rounded-full flex items-center justify-center">
                   <Image
                     src="/assets/logo.webp"
                     alt="Logo"
-                    width={280}
-                    height={280}
-                    className="md:w-[280px] md:h-[280px] object-contain opacity-80 mix-blend-screen"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 object-contain opacity-60 mix-blend-screen grayscale"
                   />
-                </motion.div>
+                </div>
+              </motion.div>
 
-                {/* Primary Navigation Links */}
-                <div className="w-full md:w-[70%] flex flex-col items-center md:items-end gap-3 md:gap-4 lg:gap-5">
-                  {[
-                    { label: "ABOUT", path: "/about" },
-                    { label: "WORKSHOPS", path: "/online-workshops" },
-                    { label: "EVENTS", path: "/events" },
-                    { label: "ACCOMMODATION", path: "/accommodation" },
-                    { label: "CONTACT US", path: "/contact-us" },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{
-                        delay: 0.1 + i * 0.05,
-                        duration: 0.5,
-                        ease: "easeOut",
-                      }}
-                      className="w-full flex justify-end">
-                      <Link
-                        href={item.path}
-                        string="magnetic"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="cursor-target relative px-4 md:px-6 py-3 flex justify-end font-syncopate font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl tracking-lg uppercase rounded-xl">
+              {/* Tagline */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="font-syncopate text-[10px] md:text-xs tracking-[0.4em] text-white/40 uppercase mb-20"
+              >
+                CONSCIENTIA SINCE 2026
+              </motion.p>
 
-                        {/* Staggered Character Animation on Hover */}
-                        <motion.div
-                          className="relative z-10 flex justify-end"
-                          whileHover="hovered"
-                          initial="initial"
-                        >
-                          {item.label.split("").map((char, index) => (
-                            <div
-                              key={index}
-                              className="relative overflow-hidden h-[1.1em] inline-block"
-                            >
-                              {/* Slide-out State */}
-                              <motion.span
-                                custom={index}
-                                variants={{
-                                  initial: (i) => ({
-                                    y: 0,
-                                    opacity: 1,
-                                    transition: {
-                                      delay: i * 0.03,
-                                      duration: 0.35,
-                                      ease: [0.76, 0, 0.24, 1],
-                                    },
-                                  }),
-                                  hovered: (i) => ({
-                                    y: "-110%",
-                                    opacity: 0,
-                                    transition: {
-                                      delay: i * 0.03,
-                                      duration: 0.35,
-                                      ease: [0.76, 0, 0.24, 1],
-                                    },
-                                  }),
-                                }}
-                                className="absolute inset-0 flex items-center justify-center text-white"
-                              >
-                                {char === " " ? "\u00A0" : char}
-                              </motion.span>
-                              {/* Slide-in State (Cyan/Yellow) */}
-                              <motion.span
-                                custom={index}
-                                variants={{
-                                  initial: (i) => ({
-                                    y: "110%",
-                                    opacity: 0,
-                                    transition: {
-                                      delay: i * 0.03,
-                                      duration: 0.35,
-                                      ease: [0.76, 0, 0.24, 1],
-                                    },
-                                  }),
-                                  hovered: (i) => ({
-                                    y: 0,
-                                    opacity: 1,
-                                    transition: {
-                                      delay: i * 0.03,
-                                      duration: 0.35,
-                                      ease: [0.76, 0, 0.24, 1],
-                                    },
-                                  }),
-                                }}
-                                className="relative flex items-center justify-center text-yellow-500"
-                              >
-                                {char === " " ? "\u00A0" : char}
-                              </motion.span>
-                            </div>
-                          ))}
-                        </motion.div>
-                      </Link>
-                    </motion.div>
+              {/* Footer Actions */}
+              <div className="absolute bottom-10 left-0 w-full flex flex-col items-center gap-6">
+                <Link
+                  href="/contact-us"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="cursor-target font-syncopate text-[11px] md:text-[13px] tracking-[0.2em] text-[#C6FF00]/90 hover:text-[#C6FF00] uppercase underline underline-offset-8 decoration-1"
+                >
+                  BUSINESS ENQUIRIES
+                </Link>
+
+                {/* Socials */}
+                <div className="flex items-center gap-8 md:gap-12">
+                  {["TIKTOK", "INSTAGRAM", "YOUTUBE", "TWITTER"].map((social) => (
+                    <Link
+                      key={social}
+                      href="#"
+                      className="cursor-target font-syncopate text-[10px] md:text-[11px] tracking-[0.15em] text-white/60 hover:text-white transition-colors"
+                    >
+                      {social}
+                    </Link>
                   ))}
                 </div>
               </div>
-
-              {/* Mobile Decorative Logo */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex md:hidden items-center justify-center w-full mt-12">
-                <Image
-                  src="/assets/logo.webp"
-                  alt="Logo"
-                  width={120}
-                  height={120}
-                  className="w-24 h-24 object-contain opacity-80 mix-blend-screen"
-                />
-              </motion.div>
-
-              {/* Social Media Footer */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-col items-center md:items-end gap-3 md:gap-4 w-full mt-2 md:mt-5">
-                <span className="font-karla uppercase tracking-[0.3em] text-[9px] md:text-[10px] text-white/50 mb-1">
-                  Follow Us
-                </span>
-                <div className="flex items-center justify-center md:justify-end gap-5 md:gap-7 w-full">
-                  <Link
-                    href="#"
-                    className="cursor-target w-9 h-9 md:w-11 md:h-11 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer opacity-90 hover:opacity-100">
-                    <Image
-                      src="/assets/instagram.png"
-                      alt="Instagram"
-                      width={40}
-                      height={40}
-                      className="object-contain rounded-lg"
-                    />
-                  </Link>
-                  <Link
-                    href="#"
-                    className="cursor-target w-9 h-9 md:w-11 md:h-11 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer opacity-90 hover:opacity-100">
-                    <Image
-                      src="/assets/youtube.png"
-                      alt="YouTube"
-                      width={40}
-                      height={40}
-                      className="object-contain"
-                    />
-                  </Link>
-                  <Link
-                    href="#"
-                    className="cursor-target w-9 h-9 md:w-11 md:h-11 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer opacity-90 hover:opacity-100">
-                    <Image
-                      src="/assets/linkedin.png"
-                      alt="LinkedIn"
-                      width={40}
-                      height={40}
-                      className="object-contain"
-                    />
-                  </Link>
-                  <Link
-                    href="#"
-                    className="cursor-target w-9 h-9 md:w-11 md:h-11 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer opacity-90 hover:opacity-100 rounded-full overflow-hidden">
-                    <Image
-                      src="/assets/X.jpg"
-                      alt="X"
-                      width={40}
-                      height={40}
-                      className="object-cover rounded-full"
-                    />
-                  </Link>
-                </div>
-              </motion.div>
             </div>
           </motion.div>
         )}
