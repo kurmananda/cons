@@ -11,7 +11,7 @@ const Footer = () => {
             Conscientia<span className="text-yellow-600">.</span>
           </span>
           <span className="text-neutral-300 text-[10px] font-bold uppercase tracking-widest ml-2">
-            Research Initiative
+            The Time Fall
           </span>
         </div>
 

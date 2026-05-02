@@ -1,15 +1,263 @@
-'use client'
-import { useEffect } from 'react';
+"use client";
 
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowUpRight,
+  Satellite,
+  Zap,
+  Rocket,
+  Cpu,
+  ChevronRight,
+  Laptop,
+  Package,
+  Star,
+  X
+} from "lucide-react";
 
+export default function Home() {
+  const targetRef = useRef(null);
+  const [selectedWorkshop, setSelectedWorkshop] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
-export default function HomePage() {
-  useEffect(() => {
-    window.location.href = "/online-workshops";
-  }, []);
+  const expoTransition = { duration: 0.2, ease: [0.85, 0, 0.15, 1] };
+
+  // --- SCROLL LOGIC ---
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start end", "end start"],
+  });
+
+  const rotate1 = useTransform(scrollYProgress, [0, 1], [-20, 20]);
+  const rotate2 = useTransform(scrollYProgress, [0, 1], [15, -15]);
+  const scaleEffect = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1.1, 0.9]);
+  const xSlide = useTransform(scrollYProgress, [0, 1], ["0%", "-60%"]);
+
+  const handleArchiveScroll = (e) => {
+    e.preventDefault();
+    targetRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const workshopCartel = [
+    { title: "Satellite Building", icon: <Satellite size={20} />, price: "₹349", cat: "Space" },
+    { title: "Launch Vehicle", icon: <Rocket size={20} />, price: "₹349", cat: "Space" },
+    { title: "Space Combo", icon: <Star size={20} />, price: "₹649", cat: "Space", highlight: true },
+    { title: "Agentic AI", icon: <Cpu size={20} />, price: "₹299", cat: "Tech" },
+    { title: "Python Workshop", icon: <Laptop size={20} />, price: "₹299", cat: "Tech" },
+    { title: "Coding Combo", icon: <Zap size={20} />, price: "₹549", cat: "Tech", highlight: true },
+    { title: "Mega Skillset", icon: <Star size={20} />, price: "₹1149", cat: "Premium" },
+    { title: "Space Merch", icon: <Package size={20} />, price: "₹599", cat: "Merch" },
+    { title: "Ultimate Combo", icon: <Star size={20} />, price: "₹1699", cat: "Ultimate", highlight: true },
+  ];
+
   return (
-    <div className="bg-[#FDFDFD] selection:bg-yellow-100">
-      
-    </div>
+    <main className="bg-[#050505] min-h-screen text-white selection:bg-cyan-500/30 overflow-x-hidden relative">
+
+      {/* --- HERO SECTION --- */}
+      <section className="relative h-screen flex flex-col items-center justify-center z-10 px-6">
+        <div className="absolute inset-0 bg-black" />
+        <div className="relative text-center space-y-10">
+          <motion.div
+            initial={{ opacity: 0, letterSpacing: "1.5em" }}
+            animate={{ opacity: 1, letterSpacing: "0.8em" }}
+            transition={{ duration: 1.5 }}
+            className="font-syncopate text-cyan-500 text-[10px] md:text-xs uppercase font-bold"
+          >
+            Technical Fest 2026
+          </motion.div>
+
+          <div className="overflow-hidden">
+            <motion.h1
+              initial={{ y: "110%", rotateX: 50 }}
+              animate={{ y: 0, rotateX: 0 }}
+              transition={expoTransition}
+              className="text-[14vw] md:text-[10vw] font-syncopate font-bold leading-[0.75] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40"
+            >
+              CONSCIENTIA
+            </motion.h1>
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 0.8 }}
+            className="text-center max-w-xl mx-auto font-light text-xs md:text-sm tracking-[0.2em] uppercase leading-loose"
+          >
+            THE TIME FALL <br /> Directed by IIST.
+          </motion.p>
+
+          <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 1.2, duration: 1 }} className="pt-12 flex flex-col items-center gap-6">
+            <button onClick={handleArchiveScroll} className="group flex flex-col items-center gap-6 cursor-pointer bg-transparent border-none appearance-none">
+              <div className="h-16 w-[1px] bg-cyan-500 group-hover:h-24 group-hover:bg-white transition-all duration-200 relative">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-full blur-[2px]" />
+              </div>
+              <span className="font-syncopate text-[9px] tracking-[0.5em] text-white/40 group-hover:text-cyan-400 transition-colors uppercase">Enter Archives</span>
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* --- WORKSHOP CARTEL --- */}
+      <section className="min-h-[70vh] py-24 relative z-10 flex items-center">
+        <div className="container mx-auto px-6 md:px-20 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-12">
+            <motion.div initial={{ x: -80, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} transition={expoTransition} className="space-y-4">
+              <span className="font-mono text-[10px] text-cyan-500 tracking-[0.6em] uppercase font-black">// CLASSIFIED MODULES</span>
+              <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">Workshop<br /><span className="text-white/10 italic">Cartel</span></h2>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
+              <Link
+                href="/online-workshops"
+                className="group relative flex items-center gap-6 bg-white px-10 py-5 rounded-full overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-500"
+              >
+                <span className="relative z-10 font-syncopate text-[11px] tracking-widest text-black font-black uppercase">Registration Page</span>
+                <div className="relative z-10 w-8 h-8 rounded-full bg-black flex items-center justify-center text-white group-hover:rotate-45 transition-transform duration-400">
+                  <ChevronRight size={18} />
+                </div>
+                <div className="absolute inset-0 bg-cyan-400 translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500 ease-[0.85,0,0.15,1]" />
+              </Link>
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {workshopCartel.map((w, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onClick={() => setSelectedWorkshop(w)}
+                whileHover={{ scale: 1.02, rotateX: -5, rotateY: 5 }}
+                className={`group relative h-[150px] cursor-pointer bg-[#0A0A0A]/60 border ${w.highlight ? 'border-cyan-500/30' : 'border-white/5'} rounded-3xl p-6 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all`}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-4 items-center">
+                    <motion.div
+                      animate={hoveredIndex === index ? { rotate: 360, scale: 1.1 } : { rotate: 0, scale: 1 }}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center  ${w.highlight ? 'bg-cyan-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-cyan-400'}`}
+                      transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 20,
+                        rotate: { duration: 0.4, ease: "circOut" } // snappier rotation
+                      }}
+                    >
+                      {w.icon}
+                    </motion.div>
+                    <div>
+                      <span className="block font-syncopate text-[8px] text-cyan-500/60 uppercase mb-1 tracking-widest">{w.cat}</span>
+                      <h3 className="font-syncopate text-[11px] tracking-wider uppercase group-hover:text-cyan-400 transition-colors">{w.title}</h3>
+                    </div>
+                  </div>
+                  {w.highlight && <div className="bg-cyan-500 text-black font-syncopate text-[7px] px-2 py-0.5 rounded-full font-bold uppercase">Hot</div>}
+                </div>
+
+                <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                  <span className="font-syncopate font-bold text-lg">{w.price}</span>
+                  <ArrowUpRight size={16} className="text-white/20 group-hover:text-cyan-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- REGISTRATION MODAL --- */}
+      <AnimatePresence>
+        {selectedWorkshop && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/80"
+            onClick={() => setSelectedWorkshop(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative bg-[#0F0F0F] border border-cyan-500/50 p-8 md:p-12 rounded-[2.5rem] text-center max-w-md w-full shadow-[0_0_80px_rgba(6,182,212,0.15)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedWorkshop(null)}
+                className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <span className="font-mono text-[9px] text-cyan-500 tracking-[0.5em] uppercase mb-4 block">Initialization Required</span>
+              <h2 className="font-syncopate text-2xl mb-8 uppercase tracking-tighter leading-tight">
+                Access {selectedWorkshop.title}
+              </h2>
+              <Link
+                href="/online-workshops"
+                className="group relative inline-flex items-center gap-6 bg-white px-10 py-5 rounded-full overflow-hidden transition-transform hover:scale-105 active:scale-95"
+              >
+                <span className="relative z-10 font-syncopate text-[10px] tracking-widest text-black font-black uppercase">Registration Page</span>
+                <div className="relative z-10 w-7 h-7 rounded-full bg-black flex items-center justify-center text-white group-hover:rotate-45 transition-transform duration-500">
+                  <ArrowUpRight size={16} />
+                </div>
+                <div className="absolute inset-0 bg-cyan-400 translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500 ease-out" />
+              </Link>
+              <p className="mt-8 text-white/20 font-mono text-[8px] uppercase tracking-[0.3em]">
+                {selectedWorkshop.cat} Module // Price: {selectedWorkshop.price}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* --- PHOTO GALLERY (VISUAL ARCHIVES) --- */}
+      <section ref={targetRef} className="py-56 relative z-10 border-t border-white/5 bg-[#030303]/50 backdrop-blur-3xl overflow-hidden">
+        <div className="container mx-auto px-6 text-center mb-32">
+          <motion.span style={{ opacity: scrollYProgress }} className="font-mono text-[10px] text-cyan-500 tracking-[1em] uppercase block mb-4">Visual Archives</motion.span>
+          <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">The <span className="text-white/10 italic">Time Fall</span> 2026</h2>
+        </div>
+        <div className="flex items-center">
+          <motion.div style={{ x: xSlide }} className="flex gap-12 px-[10vw]">
+            {["/assets/iist.png", "/assets/image1.png", "/assets/image3.png", "/assets/iist.png"].map((src, i) => (
+              <motion.div key={i} style={{ rotate: i % 2 === 0 ? rotate1 : rotate2, scale: scaleEffect }} className="relative w-[70vw] md:w-[450px] aspect-video rounded-[3rem] overflow-hidden border border-white/10 shrink-0">
+                <Image src={src} fill alt={`Archive ${i}`} sizes="(max-width: 768px) 70vw, 450px" className="object-cover" />
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* --- INSTITUTION: THE NEXUS --- */}
+      <section className="py-48 px-6 md:px-20 bg-[#070707] border-y border-white/5 relative z-10">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-32 items-center">
+          <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} transition={expoTransition} className="flex-1 space-y-14">
+            <div className="space-y-6">
+              <div className="w-12 h-[2px] bg-cyan-500" />
+              <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter leading-tight uppercase font-black">India's Space <br /><span className="text-cyan-500">Incubator</span></h2>
+            </div>
+            <div className="space-y-6 text-white/40 font-light leading-relaxed text-lg md:text-xl max-w-xl">
+              <p>The IIST is India’s premier incubator for future leaders in space science, technology, and engineering.</p>
+              <p>By partnering with IIST, you align your brand with unparalleled academic prestige and a national commitment to innovation.</p>
+              <p className="text-sm border-l border-white/10 pl-6 italic">Established in 2007 by the Dept. of Space with complete backing from ISRO.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10">
+              {[{ label: "Established", val: "2007" }, { label: "Founding Partner", val: "ISRO / Dept. of Space" }].map((stat, i) => (
+                <div key={i} className="border-l-2 border-cyan-500/40 pl-8 py-3 bg-white/[0.02] rounded-r-xl">
+                  <p className="text-[10px] font-syncopate text-cyan-500/50 tracking-[0.4em] mb-3 uppercase font-black">{stat.label}</p>
+                  <p className="font-syncopate text-sm tracking-widest text-white">{stat.val}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} className="flex-1 w-full aspect-[4/5] relative border border-white/10 group overflow-hidden rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+            <Image src="/assets/iist.png" alt="Campus" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-30 group-hover:opacity-60 transition-all duration-300 scale-110 group-hover:scale-100" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent opacity-80" />
+          </motion.div>
+        </div>
+      </section>
+    </main>
   );
 }

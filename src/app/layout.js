@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
       <body>
 
         <Navbar />
-        <div className="h-[15vh] flex flex-col bg-black/5"></div> {/* Spacer to prevent content from being hidden behind the fixed navbar */}   
+        <div className="h-[10vh] flex flex-col bg-black"></div> {/* Spacer to prevent content from being hidden behind the fixed navbar */}   
 
         <main>
           {children}

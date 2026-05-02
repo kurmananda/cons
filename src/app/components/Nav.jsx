@@ -48,7 +48,7 @@ const Nav = () => {
         {/* Left Section: Logo */}
         <div className="flex items-center z-50">
           <Link href="/" string="magnetic" className="cursor-target pointer-events-auto transition-transform hover:scale-110 duration-200 shrink-0">
-            <Image src="/assets/logo.webp" alt="Logo" width={55} height={55} className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
+            <Image src="/assets/logo.png" alt="Logo" width={55} height={55} className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
           </Link>
         </div>
 
@@ -213,7 +213,7 @@ const Nav = () => {
               >
                 <div className="w-16 h-16 md:w-20 md:h-20 border-2 border-white/20 rounded-full flex items-center justify-center">
                   <Image
-                    src="/assets/logo.webp"
+                    src="/assets/logo.png"
                     alt="Logo"
                     width={40}
                     height={40}
