@@ -4,12 +4,10 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const response = await fetch('https://api.tiqr.events/v1/bookings/', {
+    const response = await fetch('https://api.tiqr.events/participant/booking/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // DOUBLE CHECK THESE NAMES IN YOUR TIQR DASHBOARD
-        'Authorization': `Token ${process.env.TIQR_API_KEY}`, 
       },
       body: JSON.stringify(body),
     });

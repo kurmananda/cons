@@ -23,8 +23,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // --- INITIALIZE SUPABASE ---
 const supabase = createClient(
-  'https://aeytetacgdmxtsotjfti.supabase.co',
-  'sb_publishable_waq7AxdRDLcOndA5NF5vKg_HSr9IAn8'
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_KEY
 );
 
 export default function WorkshopRegistration() {
@@ -198,32 +198,48 @@ export default function WorkshopRegistration() {
   // --- PERSISTENCE ---
   useEffect(() => {
 
-    const lastEmail =
-      localStorage.getItem('last_active_email');
+    const fetchUserData = async () => {
+      const lastEmail =
+        localStorage.getItem('last_active_email');
 
-    if (lastEmail) {
+      if (lastEmail) {
+        try {
+          const { data } = await supabase
+            .from('registrations')
+            .select('*')
+            .eq('email', lastEmail.toLowerCase().trim())
+            .maybeSingle();
 
-      const purchases =
-        localStorage.getItem(`purchase_${lastEmail}`);
+          if (data && data.status === 'confirmed') {
+            const paidWorkshopIds = Array.isArray(data.workshop_ids)
+              ? data.workshop_ids
+              : typeof data.workshop_ids === 'string'
+                ? data.workshop_ids.split(',').map(id => id.trim())
+                : [];
 
-      const profile =
-        localStorage.getItem(`profile_${lastEmail}`);
-
-      if (purchases) {
-
-        setRegisteredItems(JSON.parse(purchases));
-
-        setFormData(
-          profile
-            ? JSON.parse(profile)
-            : { email: lastEmail }
-        );
-
-        setStep(4);
+            setRegisteredItems(paidWorkshopIds);
+            setFormData(
+              data.details || {
+                email: data.email,
+                name: '',
+                class: '',
+                schoolId: '',
+                college: '',
+                city: '',
+                phone: '',
+              }
+            );
+            setStep(4);
+          }
+        } catch (err) {
+          console.error('Error fetching user data:', err);
+        }
       }
-    }
 
-    setLoading(false);
+      setLoading(false);
+    };
+
+    fetchUserData();
 
   }, []);
 
@@ -265,16 +281,6 @@ export default function WorkshopRegistration() {
         localStorage.setItem(
           'last_active_email',
           data.email
-        );
-
-        localStorage.setItem(
-          `profile_${data.email}`,
-          JSON.stringify(data.details)
-        );
-
-        localStorage.setItem(
-          `purchase_${data.email}`,
-          JSON.stringify(paidWorkshopIds)
         );
 
         setStep(4);
@@ -330,7 +336,7 @@ export default function WorkshopRegistration() {
         return;
       }
 
-      // SAVE TO LOCALSTORAGE
+      // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
       localStorage.setItem(
         'registration_email',
         formData.email

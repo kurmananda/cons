@@ -135,9 +135,9 @@ export default function PaymentSuccessPage() {
 
         setMessage('Payment successful');
 
-        // REDIRECT TO MAIN PAGE
+        // REDIRECT TO ONLINE WORKSHOPS
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/online-workshops';
         }, 2000);
 
       } catch (err) {

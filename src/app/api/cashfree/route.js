@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { Cashfree } from 'cashfree-pg';
 
 Cashfree.XClientId =
-  "TEST1105651582cfb10e91fe60700a9251565011";
+  process.env.CASHFREE_CLIENT_ID;
 
 Cashfree.XClientSecret =
-  "cfsk_ma_test_06d40c64041ccdcb81008ad536f5586a_3e340568";
+  process.env.CASHFREE_CLIENT_SECRET;
 
 Cashfree.XEnvironment = 0;
 
@@ -14,6 +14,10 @@ export async function POST(req) {
   try {
 
     const body = await req.json();
+
+    // AUTO-DETECT BASE URL FROM REQUEST
+    const url = new URL(req.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
 
     const {
       customer_id,
@@ -53,7 +57,7 @@ export async function POST(req) {
       order_meta: {
 
         return_url:
-          `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment-success?order_id={order_id}`
+          `${baseUrl}/payment-success?order_id=${order_id}`
       },
 
       order_tags: metadata

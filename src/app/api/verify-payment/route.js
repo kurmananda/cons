@@ -15,10 +15,10 @@ export async function GET(req) {
 
         headers: {
           'x-client-id':
-            'TEST1105651582cfb10e91fe60700a9251565011',
+            process.env.CASHFREE_CLIENT_ID,
 
           'x-client-secret':
-            'cfsk_ma_test_06d40c64041ccdcb81008ad536f5586a_3e340568',
+            process.env.CASHFREE_CLIENT_SECRET,
 
           'x-api-version': '2023-08-01',
         },

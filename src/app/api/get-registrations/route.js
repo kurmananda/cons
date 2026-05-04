@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-  'https://aeytetacgdmxtsotjfti.supabase.co',
-  'sb_publishable_waq7AxdRDLcOndA5NF5vKg_HSr9IAn8'
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_KEY
 );
 
 export async function GET(req) {
