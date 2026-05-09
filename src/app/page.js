@@ -43,13 +43,8 @@ export default function Home() {
   const workshopCartel = [
     { title: "Satellite Building", icon: <Satellite size={20} />, price: "₹349", cat: "Space" },
     { title: "Launch Vehicle", icon: <Rocket size={20} />, price: "₹349", cat: "Space" },
-    { title: "Space Combo", icon: <Star size={20} />, price: "₹649", cat: "Space", highlight: true },
     { title: "Agentic AI", icon: <Cpu size={20} />, price: "₹299", cat: "Tech" },
     { title: "Python Workshop", icon: <Laptop size={20} />, price: "₹299", cat: "Tech" },
-    { title: "Coding Combo", icon: <Zap size={20} />, price: "₹549", cat: "Tech", highlight: true },
-    { title: "Mega Skillset", icon: <Star size={20} />, price: "₹1149", cat: "Premium" },
-    { title: "Space Merch", icon: <Package size={20} />, price: "₹599", cat: "Merch" },
-    { title: "Ultimate Combo", icon: <Star size={20} />, price: "₹1699", cat: "Ultimate", highlight: true },
   ];
 
   return (
@@ -65,7 +60,7 @@ export default function Home() {
             transition={{ duration: 1.5 }}
             className="font-syncopate text-cyan-500 text-[10px] md:text-xs uppercase font-bold"
           >
-            Technical Fest 2026
+            Technical Fest
           </motion.div>
 
           <div className="overflow-hidden">
@@ -83,17 +78,17 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
             transition={{ delay: 0.8 }}
-            className="text-center max-w-xl mx-auto font-light text-xs md:text-sm tracking-[0.2em] uppercase leading-loose"
+            className="text-center max-w-xl mx-auto text-md md:text-md tracking-[0.2em] uppercase leading-loose"
           >
-            THE TIME FALL <br /> Directed by IIST.
+            TIME FALL <br /> <span  className="text-xs md:text-xs">Directed by IIST.</span>
           </motion.p>
 
           <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 1.2, duration: 1 }} className="pt-12 flex flex-col items-center gap-6">
-            <button onClick={handleArchiveScroll} className="group flex flex-col items-center gap-6 cursor-pointer bg-transparent border-none appearance-none">
+            <button onClick={() => {location.href="/online-workshops"}} className="group flex flex-col items-center gap-6 cursor-pointer bg-transparent border-none appearance-none">
               <div className="h-16 w-[1px] bg-cyan-500 group-hover:h-24 group-hover:bg-white transition-all duration-200 relative">
                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-full blur-[2px]" />
               </div>
-              <span className="font-syncopate text-[9px] tracking-[0.5em] text-white/40 group-hover:text-cyan-400 transition-colors uppercase">Enter Archives</span>
+              <span className="font-syncopate text-[9px] tracking-[0.5em] text-white/40 group-hover:text-cyan-400 transition-colors uppercase">Register for a Workshop</span>
             </button>
           </motion.div>
         </div>
@@ -105,7 +100,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-12">
             <motion.div initial={{ x: -80, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} transition={expoTransition} className="space-y-4">
               <span className="font-mono text-[10px] text-cyan-500 tracking-[0.6em] uppercase font-black">// CLASSIFIED MODULES</span>
-              <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">Workshop<br /><span className="text-white/10 italic">Cartel</span></h2>
+              <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">Workshop<br /><span className="text-white/50 italic">Cartel</span></h2>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
@@ -122,48 +117,71 @@ export default function Home() {
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workshopCartel.map((w, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                onClick={() => setSelectedWorkshop(w)}
-                whileHover={{ scale: 1.02, rotateX: -5, rotateY: 5 }}
-                className={`group relative h-[150px] cursor-pointer bg-[#0A0A0A]/60 border ${w.highlight ? 'border-cyan-500/30' : 'border-white/5'} rounded-3xl p-6 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex gap-4 items-center">
-                    <motion.div
-                      animate={hoveredIndex === index ? { rotate: 360, scale: 1.1 } : { rotate: 0, scale: 1 }}
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center  ${w.highlight ? 'bg-cyan-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-cyan-400'}`}
-                      transition={{
-                        type: "spring",
-                        stiffness: 260,
-                        damping: 20,
-                        rotate: { duration: 0.4, ease: "circOut" } // snappier rotation
-                      }}
-                    >
-                      {w.icon}
-                    </motion.div>
-                    <div>
-                      <span className="block font-syncopate text-[8px] text-cyan-500/60 uppercase mb-1 tracking-widest">{w.cat}</span>
-                      <h3 className="font-syncopate text-[11px] tracking-wider uppercase group-hover:text-cyan-400 transition-colors">{w.title}</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
+            <div className="flex flex-col gap-4">
+              {workshopCartel.slice(0, 4).map((w, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  onClick={() => setSelectedWorkshop(w)}
+                  whileHover={{ scale: 1.02, rotateX: -5, rotateY: 5 }}
+                  className={`group relative h-[150px] cursor-pointer bg-[#0A0A0A]/60 border ${w.highlight ? 'border-cyan-500/30' : 'border-white/5'} rounded-3xl p-6 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex gap-4 items-center">
+                      <motion.div
+                        animate={hoveredIndex === index ? { rotate: 360, scale: 1.1 } : { rotate: 0, scale: 1 }}
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center  ${w.highlight ? 'bg-cyan-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-cyan-400'}`}
+                        transition={{
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 20,
+                          rotate: { duration: 0.4, ease: "circOut" }
+                        }}
+                      >
+                        {w.icon}
+                      </motion.div>
+                      <div>
+                        <span className="block font-syncopate text-sm text-cyan-500/60 uppercase mb-1 tracking-widest">{w.cat}</span>
+                        <h3 className="font-syncopate text-xl tracking-wider uppercase group-hover:text-cyan-400 transition-colors">{w.title}</h3>
+                      </div>
                     </div>
+                    {w.highlight && <div className="bg-cyan-500 text-black font-syncopate text-[7px] px-2 py-0.5 rounded-full font-bold uppercase">Hot</div>}
                   </div>
-                  {w.highlight && <div className="bg-cyan-500 text-black font-syncopate text-[7px] px-2 py-0.5 rounded-full font-bold uppercase">Hot</div>}
-                </div>
 
-                <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                  <span className="font-syncopate font-bold text-lg">{w.price}</span>
-                  <ArrowUpRight size={16} className="text-white/20 group-hover:text-cyan-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                </div>
-              </motion.div>
-            ))}
+                  <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                    <span className="font-syncopate font-bold text-lg">{w.price}</span>
+                    <ArrowUpRight size={16} className="text-white/20 group-hover:text-cyan-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0A0A0A]/70 h-[min(560px,80vh)]"
+            >
+              <Image
+                src="/assets/image1.png"
+                alt="Workshop visual"
+                fill
+                sizes="(max-width: 1024px) 100vw, 33vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/95 via-transparent to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8 text-white">
+                <span className="font-syncopate text-[10px] uppercase tracking-[0.35em] text-cyan-400/80">Major Workshops</span>
+                <h3 className="font-syncopate text-3xl md:text-4xl uppercase tracking-tight mt-3 leading-tight">with combos</h3>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -217,7 +235,7 @@ export default function Home() {
       <section ref={targetRef} className="py-56 relative z-10 border-t border-white/5 bg-[#030303]/50 backdrop-blur-3xl overflow-hidden">
         <div className="container mx-auto px-6 text-center mb-32">
           <motion.span style={{ opacity: scrollYProgress }} className="font-mono text-[10px] text-cyan-500 tracking-[1em] uppercase block mb-4">Visual Archives</motion.span>
-          <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">The <span className="text-white/10 italic">Time Fall</span> 2026</h2>
+          <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none"><span className="text-white/50 italic">Time Fall</span> 2026</h2>
         </div>
         <div className="flex items-center">
           <motion.div style={{ x: xSlide }} className="flex gap-12 px-[10vw]">

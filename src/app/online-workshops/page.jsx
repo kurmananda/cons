@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { createClient } from '@supabase/supabase-js';
+import { details } from 'framer-motion/client';
 
 
 
@@ -40,6 +41,9 @@ export default function WorkshopRegistration() {
 
   const [comboApplied, setComboApplied] = useState(false);
 
+  const [selectedWorkshop, setSelectedWorkshop] = useState(null);
+  const detailsRef = useRef(null);
+
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -50,34 +54,44 @@ export default function WorkshopRegistration() {
     phone: '',
   });
 
+  useEffect(() => {
+    if (selectedWorkshop && detailsRef.current) {
+      detailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selectedWorkshop]);
+
   // --- WORKSHOP DATA ---
   const workshops = [
     {
       id: '1',
-      name: 'Satellite Building',
+      name: 'Cube Sat Workshop',
       price: 349,
-      desc: 'Advanced orbital mechanics and nano-satellite design.',
+      desc: 'Hand on experience with multiple subsystems of sattelite design and operation.',
+      details : ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
       icon: <Satellite size={20} />,
     },
     {
       id: '2',
       name: 'Launch Vehicle Workshop',
       price: 349,
-      desc: 'Aerodynamics and propulsion system implementation.',
+      desc: 'Deep understanding of launch vehicle dynamics and mission design.',
+      details : ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
       icon: <Rocket size={20} />,
     },
     {
       id: '3',
-      name: 'Agentic AI',
+      name: 'Agentic AI Workshop',
       price: 299,
-      desc: 'Autonomous reasoning for deep space robotics.',
+      desc: 'Explore the fundamentals of agentic AI and its applications.',
+      details : ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
       icon: <Cpu size={20} />,
     },
     {
       id: '4',
-      name: 'Python Workshop',
+      name: 'Python ML Workshop',
       price: 299,
-      desc: 'Predictive modeling for celestial navigation.',
+      desc: 'Training a real world model with Python and machine learning.',
+      details : ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
       icon: <Brain size={20} />,
     },
   ];
@@ -90,7 +104,7 @@ export default function WorkshopRegistration() {
   };
 
   const combos = [
-    { id: 'c1', name: 'Combo', ids: ['1', '2'], price: 649 },
+    { id: 'c1', name: 'Space Combo', ids: ['1', '2'], price: 649 },
     { id: 'c2', name: 'AI Combo', ids: ['3', '4'], price: 549 },
     { id: 'c3', name: 'Mega Combo', ids: ['1', '2', '3', '4'], price: 1149 },
     { id: 'c4', name: 'Ultimate Combo', ids: ['1', '2', '3', '4', '5'], price: 1699 },
@@ -354,9 +368,12 @@ export default function WorkshopRegistration() {
         JSON.stringify(formData)
       );
 
-      // CREATE ORDER
+      // AUTO-DETECT BASE URL FROM REQUEST
+      const baseUrl = window.location.origin;
+
+      // CREATE BOOKING WITH TIQR
       const response = await fetch(
-        '/api/cashfree',
+        '/api/tiqr',
         {
           method: 'POST',
 
@@ -366,88 +383,70 @@ export default function WorkshopRegistration() {
           },
 
           body: JSON.stringify({
-
-            customer_id:
-              formData.email
-                .replace(/[@.]/g, '_'),
-
-            customer_phone:
-              formData.phone
-                .replace(/\D/g, '')
-                .slice(-10),
-
-            customer_email:
-              formData.email
-                .toLowerCase()
-                .trim(),
-
-            customer_name:
-              formData.name,
-
-            order_amount:
-              totalAmount,
-
-            metadata: {
-
-              workshop_ids:
-                payableItems.join(','),
-
-              college:
-                formData.college,
-
-              is_new_registration:
-                registeredItems.length === 0
-                  ? 'true'
-                  : 'false'
-            }
+            first_name: formData.name.split(' ')[0] || '',
+            last_name: formData.name.split(' ').slice(1).join(' ') || '',
+            phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
+            email: formData.email.toLowerCase().trim(),
+            ticket: 3042,
+            quantity: String(payableItems.length),
+            meta_data: {
+              workshop_ids: payableItems.join(','),
+              college: formData.college,
+              is_new_registration: registeredItems.length === 0 ? 'true' : 'false'
+            },
+            callback_url: `${baseUrl}/payment-success`
           })
         }
       );
 
-      const orderData =
+      const bookingData =
         await response.json();
 
-      console.log(orderData);
+      console.log(bookingData);
 
       if (!response.ok) {
 
+        const bookingError =
+          bookingData.message ||
+          bookingData.detail ||
+          (Array.isArray(bookingData.non_field_errors)
+            ? bookingData.non_field_errors.join(', ')
+            : undefined) ||
+          (typeof bookingData.error === 'string'
+            ? bookingData.error
+            : undefined);
+
         throw new Error(
-          orderData.message ||
-          'Order creation failed'
+          bookingError ||
+          'Booking creation failed'
         );
       }
 
-      // LOAD CASHFREE
-      const { load } = await import(
-        '@cashfreepayments/cashfree-js'
+      localStorage.setItem(
+        'tiqr_booking_id',
+        String(bookingData.booking?.id || '')
+      );
+      localStorage.setItem(
+        'tiqr_booking_uid',
+        bookingData.booking?.uid || ''
+      );
+      localStorage.setItem(
+        'tiqr_participant_identification_id',
+        bookingData.booking?.participant_identification_id || ''
+      );
+      localStorage.setItem(
+        'tiqr_booking_payment_url',
+        bookingData.payment?.url_to_redirect || ''
       );
 
-      const cashfree =
-        await load({
-          mode: 'sandbox'
-        });
-
-      // OPEN MODAL
-      const result =
-        await cashfree.checkout({
-
-          paymentSessionId:
-            orderData.payment_session_id,
-
-          redirectTarget:
-            '_modal'
-        });
-
-      console.log(result);
-
-      // MANUAL REDIRECT
-      if (
-        result?.error === false ||
-        result?.paymentDetails
-      ) {
-
+      if (bookingData.payment?.url_to_redirect) {
         window.location.href =
-          `/payment-success?order_id=${orderData.order_id}`;
+          bookingData.payment.url_to_redirect;
+      } else {
+        window.location.href =
+          `/payment-success?booking_uid=${encodeURIComponent(
+            bookingData.booking?.uid || ''
+          )}&amount=${totalAmount}`;
       }
 
     } catch (err) {
@@ -455,7 +454,7 @@ export default function WorkshopRegistration() {
       console.log(err);
 
       alert(
-        `Payment Error: ${err.message}`
+        `Booking Error: ${err.message}`
       );
 
     } finally {
@@ -623,25 +622,72 @@ export default function WorkshopRegistration() {
 
               {/* INDIVIDUAL */}
               <section>
-                <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">Workshops<span className="text-[#3b82f6]">.</span></h2>
+                <h2 className="text-2xl font-black italic uppercase tracking-tighter">Workshops<span className="text-[#3b82f6]">.</span></h2>
+                        <p className="text-neutral-400 text-sm leading-relaxed mb-4">(Click on the workshop to expand details below)</p>
+                <h1 className="text-xl uppercase mb-8"></h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {workshops.map(ws => {
                     const isRegistered = registeredItems.includes(ws.id);
+                    const isOpen = selectedWorkshop?.id === ws.id;
                     return (
                       <div
-                        key={ws.id} onClick={() => toggleSelection(ws.id)}
-                        className={`cursor-pointer p-6 rounded-[2rem] border-2 transition-all ${isRegistered ? 'border-green-500/20 bg-green-500/5' : selectedItems.includes(ws.id) ? 'border-[#3b82f6] bg-[#3b82f6]/5' : 'border-white/5 bg-neutral-900/40'}`}
+                        key={ws.id}
+                        onClick={() => setSelectedWorkshop(isOpen ? null : ws)}
+                        className={`cursor-pointer p-6 rounded-[2rem] border-2 transition-all ${isRegistered ? 'border-green-500/20 bg-green-500/5 shadow-[0_0_35px_rgba(34,197,94,0.25)]' : isOpen ? 'border-[#3b82f6] bg-[#3b82f6]/10 shadow-[0_0_40px_rgba(59,130,246,0.3)]' : selectedItems.includes(ws.id) ? 'border-[#3b82f6] bg-[#3b82f6]/5' : 'border-white/5 bg-neutral-900/40'}`}
                       >
                         <div className="flex justify-between items-start mb-6">
-                          <div className={`p-3 rounded-xl ${isRegistered ? 'bg-green-500/20 text-green-500' : selectedItems.includes(ws.id) ? 'bg-[#3b82f6] text-black' : 'bg-neutral-800'}`}>{ws.icon}</div>
+                          <div className={`p-3 rounded-xl ${isRegistered ? 'bg-green-500/20 text-green-500' : isOpen ? 'bg-[#3b82f6] text-black shadow-[0_0_20px_rgba(59,130,246,0.3)]' : selectedItems.includes(ws.id) ? 'bg-[#3b82f6] text-black' : 'bg-neutral-800'}`}>{ws.icon}</div>
                           {isRegistered ? <Lock size={18} className="text-green-500" /> : selectedItems.includes(ws.id) && <Check size={18} className="text-[#3b82f6]" />}
                         </div>
+                        <p className="text-neutral-400 text-sm leading-relaxed mb-4">{isOpen ? 'Details open' : '(Details below)'}</p>
                         <h3 className="font-black italic uppercase tracking-tighter text-lg mb-1">{ws.name}</h3>
-                        <div className="text-xs font-black text-neutral-500 uppercase">{isRegistered ? 'Enrolled' : `₹${ws.price}`}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-xs font-black text-neutral-500 uppercase">{isRegistered ? 'Enrolled' : `₹${ws.price}`}</div>
+                          {isOpen && <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3b82f6]">Details Open</span>}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* WORKSHOP DETAILS */}
+                <AnimatePresence>
+                  {selectedWorkshop && (
+                    <motion.div
+                      ref={detailsRef}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="mt-8 p-8 bg-neutral-900/50 rounded-[2rem] border border-white/5"
+                    >
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-[#3b82f6] text-black rounded-2xl">{selectedWorkshop.icon}</div>
+                          <div>
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter">{selectedWorkshop.name}</h3>
+                            <p className="text-neutral-400 text-sm mt-1 leading-relaxed">{selectedWorkshop.desc}</p>
+                          </div>
+                        </div>
+                        <button onClick={() => setSelectedWorkshop(null)} className="text-neutral-500 hover:text-white text-2xl leading-none">×</button>
+                      </div>
+                         { selectedWorkshop.details.map((detail, index) => (
+                            <p className="text-neutral-400 text-sm mt-1 ml-4 leading-relaxed" key={index}>
+                              {detail}
+                            </p>
+                          ))}
+                      <div className="flex items-center justify-between">
+                        <div className="text-3xl font-black text-[#3b82f6]">₹{selectedWorkshop.price}</div>
+                        <button
+                          onClick={() => { toggleSelection(selectedWorkshop.id); setSelectedWorkshop(null); }}
+                          disabled={registeredItems.includes(selectedWorkshop.id)}
+                          className={`px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${registeredItems.includes(selectedWorkshop.id) ? 'bg-green-500/20 text-green-500 border border-green-500/20' : selectedItems.includes(selectedWorkshop.id) ? 'bg-red-500 text-white' : 'bg-[#3b82f6] text-black hover:bg-white'}`}
+                        >
+                          {registeredItems.includes(selectedWorkshop.id) ? 'Enrolled' : selectedItems.includes(selectedWorkshop.id) ? 'Remove' : 'Select Workshop'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </section>
             </motion.div>
           )}

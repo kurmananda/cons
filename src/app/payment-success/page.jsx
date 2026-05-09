@@ -21,30 +21,50 @@ export default function PaymentSuccessPage() {
           window.location.search
         );
 
+        const booking_uid = params.get('booking_uid');
         const order_id = params.get('order_id');
+        const amount_param = params.get('amount');
 
-        if (!order_id) {
-          setMessage('Order ID missing');
+        const tiqrBookingUid =
+          booking_uid ||
+          localStorage.getItem('tiqr_booking_uid');
+
+        const tiqrBookingId =
+          localStorage.getItem('tiqr_booking_id');
+
+        const tiqrParticipantIdentificationId =
+          localStorage.getItem(
+            'tiqr_participant_identification_id'
+          );
+
+        const isTiqrFlow = Boolean(tiqrBookingUid);
+
+        if (!isTiqrFlow && !order_id) {
+          setMessage('Booking or Order ID missing');
           setLoading(false);
           return;
         }
 
-        // VERIFY PAYMENT
-        const verifyResponse = await fetch(
-          `/api/verify-payment?order_id=${order_id}`
-        );
+        let verifyData = null;
 
-        const verifyData =
-          await verifyResponse.json();
+        if (!isTiqrFlow) {
+          // VERIFY CASHFREE PAYMENT
+          const verifyResponse = await fetch(
+            `/api/verify-payment?order_id=${order_id}`
+          );
 
-        console.log(verifyData);
+          verifyData =
+            await verifyResponse.json();
 
-        if (
-          verifyData.order_status !== 'PAID'
-        ) {
-          setMessage('Payment not completed');
-          setLoading(false);
-          return;
+          console.log(verifyData);
+
+          if (
+            verifyData.order_status !== 'PAID'
+          ) {
+            setMessage('Payment not completed');
+            setLoading(false);
+            return;
+          }
         }
 
         setMessage('Saving registration...');
@@ -71,19 +91,29 @@ export default function PaymentSuccessPage() {
                   'selected_workshops'
                 ),
 
-              details: JSON.parse(
-                localStorage.getItem(
-                  'registration_details'
-                ) || '{}'
-              ),
+              details: {
+                ...JSON.parse(
+                  localStorage.getItem(
+                    'registration_details'
+                  ) || '{}'
+                ),
+                tiqr_booking_uid: tiqrBookingUid || undefined,
+                tiqr_booking_id: tiqrBookingId || undefined,
+                tiqr_participant_identification_id:
+                  tiqrParticipantIdentificationId ||
+                  undefined
+              },
 
-              payment_id:
-                verifyData.cf_payment_id,
+              payment_id: isTiqrFlow
+                ? tiqrBookingUid
+                : verifyData?.cf_payment_id,
 
-              order_id,
+              order_id: isTiqrFlow
+                ? ''
+                : order_id,
 
               amount:
-                verifyData.order_amount
+                amount_param || verifyData?.order_amount || 0
             })
           }
         );

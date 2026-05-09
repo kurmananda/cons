@@ -18,11 +18,42 @@ export async function POST(req) {
 
     const details = body.details || {};
 
+    const tiqr_booking_uid =
+      body.tiqr_booking_uid ||
+      details.tiqr_booking_uid || '';
+
+    const tiqr_booking_id =
+      body.tiqr_booking_id ||
+      details.tiqr_booking_id || '';
+
+    const tiqr_participant_identification_id =
+      body.tiqr_participant_identification_id ||
+      details.tiqr_participant_identification_id || '';
+
     const payment_id = body.payment_id || '';
 
     const order_id = body.order_id || '';
 
     const amount = body.amount || 0;
+
+    const registrationDetails = {
+      ...details
+    };
+
+    if (tiqr_booking_uid) {
+      registrationDetails.tiqr_booking_uid =
+        tiqr_booking_uid;
+    }
+
+    if (tiqr_booking_id) {
+      registrationDetails.tiqr_booking_id =
+        tiqr_booking_id;
+    }
+
+    if (tiqr_participant_identification_id) {
+      registrationDetails.tiqr_participant_identification_id =
+        tiqr_participant_identification_id;
+    }
 
     if (!email) {
       return NextResponse.json(
@@ -91,7 +122,7 @@ export async function POST(req) {
 
             workshop_ids: finalWorkshopIds,
 
-            details,
+            details: registrationDetails,
 
             payment_id,
 
