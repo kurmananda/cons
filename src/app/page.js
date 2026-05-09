@@ -10,6 +10,7 @@ import {
   Zap,
   Rocket,
   Cpu,
+  Brain,
   ChevronLeft,
   ChevronRight,
   Laptop,
@@ -93,10 +94,38 @@ export default function Home() {
   }, [emblaApi]);
 
   const workshopCartel = [
-    { title: "Satellite Building", icon: <Satellite size={20} />, price: "₹349", cat: "Space" },
-    { title: "Launch Vehicle", icon: <Rocket size={20} />, price: "₹349", cat: "Space" },
-    { title: "Agentic AI", icon: <Cpu size={20} />, price: "₹299", cat: "Tech" },
-    { title: "Python Workshop", icon: <Laptop size={20} />, price: "₹299", cat: "Tech" },
+    {
+      title: 'Cube Sat Workshop',
+      price: 349,
+      desc: 'Hand on experience with multiple subsystems of sattelite design and operation.',
+      details : ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
+      icon: <Satellite size={20} />,
+      cat : 'space',
+    },
+    {
+      title: 'Launch Vehicle Workshop',
+      price: 349,
+      desc: 'Deep understanding of launch vehicle dynamics and mission design.',
+      details : ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
+      icon: <Rocket size={20} />,
+      cat : 'space',
+    },
+    {
+      title: 'Agentic AI Workshop',
+      price: 299,
+      desc: 'Explore the fundamentals of agentic AI and its applications.',
+      details : ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
+      icon: <Cpu size={20} />,
+      cat : 'tech',
+    },
+    {
+      title: 'Python ML Workshop',
+      price: 299,
+      desc: 'Training a real world model with Python and machine learning.',
+      details : ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
+      icon: <Brain size={20} />,
+      cat : 'tech',
+    },
   ];
 
   return (
@@ -180,7 +209,7 @@ export default function Home() {
                   transition={{ delay: index * 0.05 }}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
-                  onClick={() => setSelectedWorkshop(w)}
+                  onClick={() => {setSelectedWorkshop(w)}}
                   whileHover={{ scale: 1.02, rotateX: -5, rotateY: 5 }}
                   className={`group relative h-[150px] cursor-pointer bg-[#0A0A0A]/60 border ${w.highlight ? 'border-cyan-500/30' : 'border-white/5'} rounded-3xl p-6 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all`}
                 >
@@ -265,16 +294,14 @@ export default function Home() {
               <h2 className="font-syncopate text-2xl mb-8 uppercase tracking-tighter leading-tight">
                 Access {selectedWorkshop.title}
               </h2>
-              <Link
-                href="/online-workshops"
-                className="group relative inline-flex items-center gap-6 bg-white px-10 py-5 rounded-full overflow-hidden transition-transform hover:scale-105 active:scale-95"
-              >
-                <span className="relative z-10 font-syncopate text-[10px] tracking-widest text-black font-black uppercase">Registration Page</span>
-                <div className="relative z-10 w-7 h-7 rounded-full bg-black flex items-center justify-center text-white group-hover:rotate-45 transition-transform duration-500">
-                  <ArrowUpRight size={16} />
-                </div>
-                <div className="absolute inset-0 bg-cyan-400 translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500 ease-out" />
-              </Link>
+              
+              <h2 className="font-syncopate text-xl mb-8 uppercase tracking-tighter leading-tight">
+                {selectedWorkshop.details.map((detail, index) => (
+                  <p key={index} className="text-white/50 font-mono text-sm uppercase tracking-[0.3em]">
+                    {detail}
+                  </p>
+                ))}
+              </h2>
               <p className="mt-8 text-white/20 font-mono text-[8px] uppercase tracking-[0.3em]">
                 {selectedWorkshop.cat} Module // Price: {selectedWorkshop.price}
               </p>
