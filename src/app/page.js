@@ -370,7 +370,7 @@ export default function Home() {
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} className="flex-1 w-full aspect-[4/5] relative border border-white/10 group overflow-hidden rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-            <Image src="/assets/iist.png" alt="Campus" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-30 group-hover:opacity-60 transition-all duration-300 scale-110 group-hover:scale-100" />
+            <Image src="/assets/iist.png" alt="Campus" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-100 group-hover:opacity-60 transition-all duration-300 scale-110 group-hover:scale-100" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent opacity-80" />
           </motion.div>
         </div>
