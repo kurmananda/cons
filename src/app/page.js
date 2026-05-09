@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence, } from "framer-motion";
+import { useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
   Zap,
   Rocket,
   Cpu,
+  ChevronLeft,
   ChevronRight,
   Laptop,
   Package,
@@ -17,28 +18,79 @@ import {
   X
 } from "lucide-react";
 
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+
 export default function Home() {
-  const targetRef = useRef(null);
   const [selectedWorkshop, setSelectedWorkshop] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const expoTransition = { duration: 0.2, ease: [0.85, 0, 0.15, 1] };
 
   // --- SCROLL LOGIC ---
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start end", "end start"],
-  });
 
-  const rotate1 = useTransform(scrollYProgress, [0, 1], [-20, 20]);
-  const rotate2 = useTransform(scrollYProgress, [0, 1], [15, -15]);
-  const scaleEffect = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1.1, 0.9]);
-  const xSlide = useTransform(scrollYProgress, [0, 1], ["0%", "-60%"]);
+  const IMAGES = [
+    '/imags/1.jpeg',
+    '/imags/2.jpeg',
+    '/imags/3.jpeg',
+    '/imags/4.jpeg',
+    '/imags/5.jpeg',
+    '/imags/6.jpeg',
+    '/imags/7.jpeg',
+    '/imags/8.jpeg',
+    '/imags/9.jpeg',
+    '/imags/10.jpeg',
+    '/imags/11.jpeg',
+    '/imags/12.jpeg',
+    '/imags/13.jpeg',
+    '/imags/14.jpeg',
+    '/imags/15.jpeg',
+    '/imags/16.jpeg',
+    '/imags/17.jpeg',
+    '/imags/18.jpeg',
+    '/imags/19.jpeg',
+    '/imags/20.jpeg',
+    '/imags/21.jpeg',
+    '/imags/22.jpeg',
+    '/imags/23.jpeg',
+    '/imags/24.jpeg',
+    '/imags/25.jpeg',
+    '/imags/26.jpeg',
+    '/imags/27.jpeg',
+    '/imags/28.jpeg',
+    '/imags/29.jpeg',
+  ];
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      loop: true,
+      align: "center",
+      containScroll: false // Helps with centering loops
+    },
+    [
+      Autoplay({
+        delay: 500, // 0.5s as requested
+        stopOnInteraction: true,
+        stopOnMouseEnter: true,
+        playOnInit: true
+      })
+    ]
+  );
 
-  const handleArchiveScroll = (e) => {
-    e.preventDefault();
-    targetRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const handleMouseEnter = useCallback(() => {
+    emblaApi?.plugins().autoplay.stop();
+  }, [emblaApi]);
+
+  const handleMouseLeave = useCallback(() => {
+    emblaApi?.plugins().autoplay.play();
+  }, [emblaApi]);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   const workshopCartel = [
     { title: "Satellite Building", icon: <Satellite size={20} />, price: "₹349", cat: "Space" },
@@ -80,11 +132,11 @@ export default function Home() {
             transition={{ delay: 0.8 }}
             className="text-center max-w-xl mx-auto text-md md:text-md tracking-[0.2em] uppercase leading-loose"
           >
-            TIME FALL <br /> <span  className="text-xs md:text-xs">Directed by IIST.</span>
+            TIME FALL <br /> <span className="text-xs md:text-xs">Directed by IIST.</span>
           </motion.p>
 
           <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 1.2, duration: 1 }} className="pt-12 flex flex-col items-center gap-6">
-            <button onClick={() => {location.href="/online-workshops"}} className="group flex flex-col items-center gap-6 cursor-pointer bg-transparent border-none appearance-none">
+            <button onClick={() => { location.href = "/online-workshops" }} className="group flex flex-col items-center gap-6 cursor-pointer bg-transparent border-none appearance-none">
               <div className="h-16 w-[1px] bg-cyan-500 group-hover:h-24 group-hover:bg-white transition-all duration-200 relative">
                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-full blur-[2px]" />
               </div>
@@ -232,19 +284,66 @@ export default function Home() {
       </AnimatePresence>
 
       {/* --- PHOTO GALLERY (VISUAL ARCHIVES) --- */}
-      <section ref={targetRef} className="py-56 relative z-10 border-t border-white/5 bg-[#030303]/50 backdrop-blur-3xl overflow-hidden">
-        <div className="container mx-auto px-6 text-center mb-32">
-          <motion.span style={{ opacity: scrollYProgress }} className="font-mono text-[10px] text-cyan-500 tracking-[1em] uppercase block mb-4">Visual Archives</motion.span>
-          <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none"><span className="text-white/50 italic">Time Fall</span> 2026</h2>
+      <section className="my-56 pt-10 relative z-10 border-t border-white/5 bg-[#030303]/50 backdrop-blur-3xl overflow-hidden"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave} >
+        <div className="container mx-auto px-6 text-center mb-20">
+          <span className="font-mono text-[10px] text-cyan-500 tracking-[1em] uppercase block mb-4">
+            Visual Archives
+          </span>
+          <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">
+            <span className="text-white/50 italic">Time Fall</span> 2026
+          </h2>
         </div>
-        <div className="flex items-center">
-          <motion.div style={{ x: xSlide }} className="flex gap-12 px-[10vw]">
-            {["/assets/iist.png", "/assets/image1.png", "/assets/image3.png", "/assets/iist.png"].map((src, i) => (
-              <motion.div key={i} style={{ rotate: i % 2 === 0 ? rotate1 : rotate2, scale: scaleEffect }} className="relative w-[70vw] md:w-[450px] aspect-video rounded-[3rem] overflow-hidden border border-white/10 shrink-0">
-                <Image src={src} fill alt={`Archive ${i}`} sizes="(max-width: 768px) 70vw, 450px" className="object-cover" />
-              </motion.div>
-            ))}
-          </motion.div>
+
+        <div className="relative group">
+          {/* Viewport */}
+          <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
+            {/* Container */}
+            <div className="flex -ml-8"> {/* Matches gap for alignment */}
+              {IMAGES.map((src, i) => (
+                <div
+                  key={i}
+                  className="pl-8 flex-[0_0_85%] md:flex-[0_0_500px] min-w-0"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="relative aspect-video rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl bg-white/5"
+                  >
+                    <Image
+                      src={src}
+                      fill
+                      alt={`Archive ${i}`}
+                      sizes="(max-width: 768px) 85vw, 500px"
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    {/* Subtle vignette overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                  </motion.div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Floating Navigation Controls */}
+          <div className="flex justify-center items-center gap-12 mt-16">
+            <button
+              onClick={scrollPrev}
+              className="p-5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-white/70 hover:text-cyan-400 group"
+            >
+              <ChevronLeft size={28} className="group-active:scale-90 transition-transform" />
+            </button>
+
+            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+            <button
+              onClick={scrollNext}
+              className="p-5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-white/70 hover:text-cyan-400 group"
+            >
+              <ChevronRight size={28} className="group-active:scale-90 transition-transform" />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -258,7 +357,7 @@ export default function Home() {
             </div>
             <div className="space-y-6 text-white/40 font-light leading-relaxed text-lg md:text-xl max-w-xl">
               <p>The IIST is India’s premier incubator for future leaders in space science, technology, and engineering.</p>
-              <p>By partnering with IIST, you align your brand with unparalleled academic prestige and a national commitment to innovation.</p>
+              <p>The institute is committed to excellence in teaching, learning and research. IIST fosters state-of-the-art research and development in space studies and provides a think-tank to explore new directions for the Indian Space Programme.</p>
               <p className="text-sm border-l border-white/10 pl-6 italic">Established in 2007 by the Dept. of Space with complete backing from ISRO.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10">
