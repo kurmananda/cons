@@ -248,7 +248,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0A0A0A]/70 h-[min(560px,80vh)]"
+              className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0A0A0A]/70 h-[min(80vh)]"
             >
               <Image
                 src="/assets/workshops.png"
@@ -290,7 +290,7 @@ export default function Home() {
               >
                 <X size={20} />
               </button>
-              <span className="font-mono text-[9px] text-cyan-500 tracking-[0.5em] uppercase mb-4 block">Initialization Required</span>
+              <span className="font-mono text-[9px] text-cyan-500 tracking-[0.5em] uppercase mb-4 block">Visit registration page to </span>
               <h2 className="font-syncopate text-2xl mb-8 uppercase tracking-tighter leading-tight">
                 Access {selectedWorkshop.title}
               </h2>
