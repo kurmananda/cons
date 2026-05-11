@@ -28,6 +28,96 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_KEY
 );
 
+const GENERIC_PAYMENT_FAIL =
+  'We could not start payment. Please try again or use a different email.';
+
+/** TiQR / DRF errors: short user-facing text only (details go to console). */
+function formatTiqrBookingError(data) {
+  if (data == null || typeof data !== 'object') {
+    return GENERIC_PAYMENT_FAIL;
+  }
+
+  const out = [];
+  const push = (s) => {
+    if (typeof s !== 'string' || !s.trim()) return;
+    const t = s.trim();
+    if (!out.includes(t)) out.push(t);
+  };
+
+  push(data.message);
+  if (typeof data.detail === 'string') push(data.detail);
+
+  if (Array.isArray(data.non_field_errors)) {
+    for (const e of data.non_field_errors) {
+      if (typeof e === 'string') push(e);
+    }
+  }
+
+  if (typeof data.error === 'string') push(data.error);
+
+  for (const [key, val] of Object.entries(data)) {
+    if (
+      ['message', 'detail', 'error', 'non_field_errors', 'status'].includes(key)
+    ) {
+      continue;
+    }
+    if (Array.isArray(val)) {
+      for (const e of val) {
+        if (typeof e === 'string') push(`${key}: ${e}`);
+      }
+    } else if (typeof val === 'string' && val.length < 400) {
+      push(`${key}: ${val}`);
+    }
+  }
+
+  if (out.length === 0) {
+    return GENERIC_PAYMENT_FAIL;
+  }
+
+  const joined = out.slice(0, 5).join(' · ');
+  return joined.length > 380 ? `${joined.slice(0, 377)}…` : joined;
+}
+
+/** TiQR puts the checkout link in different places for single vs bulk responses. */
+function pickTiqrPaymentUrl(data) {
+  if (!data || typeof data !== 'object') return '';
+
+  const ok = (u) =>
+    typeof u === 'string' &&
+    (u.startsWith('https://') || u.startsWith('http://')) &&
+    u.length > 10;
+
+  const candidates = [
+    data.url_to_redirect,
+    data.urlToRedirect,
+    data.redirect_url,
+    data.payment_url,
+    data.checkout_url,
+    data.pay_url,
+    data.payment?.url_to_redirect,
+    data.payment?.payment_url,
+    data.payment?.url,
+    data.booking?.payment?.url_to_redirect,
+    data.booking?.payment_url,
+  ];
+
+  for (const u of candidates) {
+    if (ok(u)) return u;
+  }
+
+  if (Array.isArray(data.bookings)) {
+    for (const b of data.bookings) {
+      const u =
+        b?.payment?.url_to_redirect ||
+        b?.payment_url ||
+        b?.url_to_redirect;
+      if (ok(u)) return u;
+    }
+  }
+
+  return '';
+}
+
 export default function WorkshopRegistration() {
 
   // --- STATE MANAGEMENT ---
@@ -46,6 +136,7 @@ export default function WorkshopRegistration() {
 
   const [formData, setFormData] = useState({
     email: '',
+    confirmEmail: '',
     name: '',
     class: '',
     schoolId: '',
@@ -53,6 +144,26 @@ export default function WorkshopRegistration() {
     city: '',
     phone: '',
   });
+
+  const prevEmailRef = useRef('');
+
+  /** Avoid TiQR / registration_* from a previous address if the user edits email before paying. */
+  useEffect(() => {
+    const curr = formData.email.trim().toLowerCase();
+    const prev = prevEmailRef.current.trim().toLowerCase();
+    if (prev && curr !== prev) {
+      [
+        'registration_email',
+        'selected_workshops',
+        'registration_details',
+        'tiqr_booking_id',
+        'tiqr_booking_uid',
+        'tiqr_participant_identification_id',
+        'tiqr_booking_payment_url',
+      ].forEach((k) => localStorage.removeItem(k));
+    }
+    prevEmailRef.current = formData.email;
+  }, [formData.email]);
 
   useEffect(() => {
     if (selectedWorkshop && detailsRef.current) {
@@ -117,10 +228,22 @@ export default function WorkshopRegistration() {
   const isEmailValid =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
+  const emailsMatch =
+    formData.email.trim() !== '' &&
+    formData.confirmEmail.trim() !== '' &&
+    formData.email.trim().toLowerCase() ===
+      formData.confirmEmail.trim().toLowerCase();
+
   const isStep2Valid =
-    Object.values(formData).every(
-      (val) => val.trim() !== ''
+    isEmailValid &&
+    ['name', 'class', 'schoolId', 'college', 'city', 'phone'].every(
+      (field) => String(formData[field] ?? '').trim() !== ''
     );
+
+  const goBackToChangeEmail = () => {
+    setFormData((prev) => ({ ...prev, confirmEmail: '' }));
+    setStep(1);
+  };
 
   // --- COMBO LOGIC ---
   const qualifyingCombo = useMemo(() => {
@@ -232,17 +355,17 @@ export default function WorkshopRegistration() {
                 : [];
 
             setRegisteredItems(paidWorkshopIds);
-            setFormData(
-              data.details || {
-                email: data.email,
-                name: '',
-                class: '',
-                schoolId: '',
-                college: '',
-                city: '',
-                phone: '',
-              }
-            );
+            setFormData({
+              ...(data.details || {}),
+              email: data.email,
+              confirmEmail: data.email,
+              name: data.details?.name ?? '',
+              class: data.details?.class ?? '',
+              schoolId: data.details?.schoolId ?? '',
+              college: data.details?.college ?? '',
+              city: data.details?.city ?? '',
+              phone: data.details?.phone ?? '',
+            });
             setStep(4);
           }
         } catch (err) {
@@ -260,7 +383,7 @@ export default function WorkshopRegistration() {
   // --- EMAIL CHECK ---
   const handleEmailCheck = async () => {
 
-    if (!isEmailValid) return;
+    if (!isEmailValid || !emailsMatch) return;
 
     setIsChecking(true);
 
@@ -285,12 +408,17 @@ export default function WorkshopRegistration() {
 
         setRegisteredItems(paidWorkshopIds);
 
-        setFormData(
-          data.details || {
-            ...formData,
-            email: data.email,
-          }
-        );
+        setFormData({
+          ...(data.details || {}),
+          email: data.email,
+          confirmEmail: data.email,
+          name: data.details?.name ?? '',
+          class: data.details?.class ?? '',
+          schoolId: data.details?.schoolId ?? '',
+          college: data.details?.college ?? '',
+          city: data.details?.city ?? '',
+          phone: data.details?.phone ?? '',
+        });
 
         localStorage.setItem(
           'last_active_email',
@@ -300,11 +428,6 @@ export default function WorkshopRegistration() {
         setStep(4);
 
       } else {
-
-        localStorage.setItem(
-          'last_active_email',
-          formData.email.toLowerCase()
-        );
 
         setStep(2);
       }
@@ -328,20 +451,26 @@ export default function WorkshopRegistration() {
   const handlePayment = async () => {
   if (selectedItems.length === 0) return;
 
+  if (!isEmailValid || !emailsMatch) {
+    alert('Enter a valid email and matching confirmation before checkout.');
+    return;
+  }
+
   setIsChecking(true);
 
   try {
     // Mapping of your local IDs to TiQR Ticket IDs
+    // TiQR ticket IDs (same order as dashboard: ultimate → mega → space → merch → AI combo → workshops)
     const TICKET_MAPPING = {
-      '1': 3046, // Cube Sat
-      '2': 3045, // Launch Vehicle
-      '3': 3043, // Agentic AI
-      '4': 3044, // Python ML
-      '5': 3049, // Space Merch
-      'c1': 3048, // Space Combo
-      'c2': 3047, // AI Combo
-      'c3': 3042, // Mega Combo
-      'c4': 3050  // Ultimate Combo
+      'c4': 3050, // Ultimate Combo
+      'c3': 3049, // Mega Combo
+      'c1': 3047, // Space Combo
+      '5': 3042, // Space Merch
+      'c2': 3048, // AI Combo
+      '1': 3043, // Cube Sat
+      '2': 3044, // Launch Vehicle
+      '3': 3045, // Agentic AI
+      '4': 3046, // Python ML
     };
 
     // FILTER ONLY NEW ITEMS
@@ -355,22 +484,76 @@ export default function WorkshopRegistration() {
       return;
     }
 
-    // DETERMINE TICKET ID AND QUANTITY
-    let finalTicketId;
-    let finalQuantity = "1";
+    const baseUrl = window.location.origin;
+    const callback_url = `${baseUrl}/payment-success`;
 
-    if (activeCombo) {
-      // Use the specific Ticket ID for the Bundle
-      finalTicketId = TICKET_MAPPING[activeCombo.id];
-      finalQuantity = "1";
+    const participant = {
+      first_name: formData.name.split(' ')[0] || '',
+      last_name: formData.name.split(' ').slice(1).join(' ') || '',
+      phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
+      email: formData.email.toLowerCase().trim(),
+    };
+
+    const metaBase = (extra) => ({
+      college: formData.college,
+      is_new_registration: registeredItems.length === 0 ? 'true' : 'false',
+      ...extra,
+    });
+
+    // Combo ticket only when every workshop in the bundle is still being paid for
+    // (if part of the combo is already registered, fall back to à-la-carte lines only).
+    const comboFullyPayable =
+      activeCombo &&
+      activeCombo.ids.every((id) => payableItems.includes(id));
+
+    const bookingLines = [];
+
+    if (comboFullyPayable) {
+      bookingLines.push({
+        ...participant,
+        ticket: TICKET_MAPPING[activeCombo.id],
+        quantity: 1,
+        meta_data: metaBase({
+          internal_id: activeCombo.id,
+          workshop_ids: activeCombo.ids.join(','),
+          is_combo: 'true',
+          combo_name: activeCombo.name,
+        }),
+      });
+      for (const id of payableItems) {
+        if (activeCombo.ids.includes(id)) continue;
+        bookingLines.push({
+          ...participant,
+          ticket: TICKET_MAPPING[id],
+          quantity: 1,
+          meta_data: metaBase({
+            internal_id: id,
+            workshop_ids: id,
+            is_combo: 'false',
+            combo_name: 'none',
+          }),
+        });
+      }
     } else {
-      // If multiple individual workshops are selected (without a combo)
-      // and you want to process them in one transaction, 
-      // check if your TiQR event setup allows multiple workshops under one ticket
-      // Otherwise, we default to the first selected item or a generic workshop ticket
-      finalTicketId = TICKET_MAPPING[payableItems[0]];
-      finalQuantity = String(payableItems.length);
+      for (const id of payableItems) {
+        bookingLines.push({
+          ...participant,
+          ticket: TICKET_MAPPING[id],
+          quantity: 1,
+          meta_data: metaBase({
+            internal_id: id,
+            workshop_ids: id,
+            is_combo: 'false',
+            combo_name: 'none',
+          }),
+        });
+      }
     }
+
+    const requestPayload =
+      bookingLines.length > 1
+        ? { bookings: bookingLines, callback_url }
+        : { ...bookingLines[0], callback_url };
 
     // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
     localStorage.setItem(
@@ -383,76 +566,69 @@ export default function WorkshopRegistration() {
       payableItems.join(',')
     );
 
+    const { confirmEmail: _omitConfirm, ...detailsForStorage } = formData;
     localStorage.setItem(
       'registration_details',
-      JSON.stringify(formData)
+      JSON.stringify(detailsForStorage)
     );
 
-    const baseUrl = window.location.origin;
-
-    // CREATE BOOKING WITH TIQR
     const response = await fetch('/api/tiqr', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        first_name: formData.name.split(' ')[0] || '',
-        last_name: formData.name.split(' ').slice(1).join(' ') || '',
-        phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
-        email: formData.email.toLowerCase().trim(),
-        ticket: finalTicketId, // DYNAMIC TICKET ID
-        quantity: finalQuantity,
-        meta_data: {
-          workshop_ids: payableItems.join(','),
-          college: formData.college,
-          is_new_registration: registeredItems.length === 0 ? 'true' : 'false',
-          is_combo: activeCombo ? 'true' : 'false',
-          combo_name: activeCombo ? activeCombo.name : 'none'
-        },
-        callback_url: `${baseUrl}/payment-success`,
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
     const bookingData = await response.json();
 
     if (!response.ok) {
-      const bookingError =
-        bookingData.message ||
-        bookingData.detail ||
-        (Array.isArray(bookingData.non_field_errors)
-          ? bookingData.non_field_errors.join(', ')
-          : undefined) ||
-        (typeof bookingData.error === 'string'
-          ? bookingData.error
-          : undefined);
-
-      throw new Error(bookingError || 'Booking creation failed');
+      console.error('[TiQR] booking failed', response.status, bookingData);
+      throw new Error(formatTiqrBookingError(bookingData));
     }
 
-    localStorage.setItem('tiqr_booking_id', String(bookingData.booking?.id || ''));
-    localStorage.setItem('tiqr_booking_uid', bookingData.booking?.uid || '');
+    const usedBulk = bookingLines.length > 1;
+    const finalUid = usedBulk
+      ? bookingData.uid
+      : bookingData.booking?.uid || bookingData.uid;
+    const redirectUrl = pickTiqrPaymentUrl(bookingData);
+
+    localStorage.setItem(
+      'tiqr_booking_id',
+      String(bookingData.booking?.id || '')
+    );
+    localStorage.setItem('tiqr_booking_uid', finalUid || '');
     localStorage.setItem(
       'tiqr_participant_identification_id',
       bookingData.booking?.participant_identification_id || ''
     );
     localStorage.setItem(
       'tiqr_booking_payment_url',
-      bookingData.payment?.url_to_redirect || ''
+      redirectUrl || ''
     );
 
-    if (bookingData.payment?.url_to_redirect) {
-      window.location.href = bookingData.payment.url_to_redirect;
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
     } else {
-      window.location.href = `/payment-success?booking_uid=${encodeURIComponent(
-        bookingData.booking?.uid || ''
-      )}&amount=${totalAmount}`;
+      console.error(
+        '[TiQR] success but no checkout URL — refusing fake success page',
+        bookingData
+      );
+      alert(
+        'Your booking was created, but we could not open the payment page from this response. Please check your email for a payment link from TiQR, or contact support. (Technical details are in the browser console.)'
+      );
     }
   } catch (err) {
     console.error(err);
-    alert(`Booking Error: ${err.message}`);
+    const msg =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'string'
+          ? err
+          : formatTiqrBookingError(err);
+    alert(msg);
   } finally {
-    setIsChecking(false);
+    setIsChecking(false); 
   }
 };
 
@@ -500,7 +676,7 @@ export default function WorkshopRegistration() {
             <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-md mx-auto space-y-8 mt-12">
               <div className="text-center space-y-2">
                 <h1 className="text-4xl font-black uppercase tracking-tighter italic">Workshop Registration<span className="text-[#3b82f6]">.</span></h1>
-                <p className="text-neutral-500 text-sm font-bold tracking-widest uppercase">Enter email to proceed</p>
+                <p className="text-neutral-500 text-sm font-bold tracking-widest uppercase">Enter and confirm your email to proceed</p>
               </div>
               <div className="space-y-4">
                 <input
@@ -508,8 +684,16 @@ export default function WorkshopRegistration() {
                   className="w-full bg-neutral-900 border border-neutral-800 p-5 rounded-2xl focus:border-[#3b82f6] outline-none text-white transition-all"
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
+                <input
+                  type="email" placeholder="Confirm email" value={formData.confirmEmail}
+                  className="w-full bg-neutral-900 border border-neutral-800 p-5 rounded-2xl focus:border-[#3b82f6] outline-none text-white transition-all"
+                  onChange={(e) => setFormData({ ...formData, confirmEmail: e.target.value })}
+                />
+                {formData.confirmEmail.trim() !== '' && !emailsMatch && (
+                  <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest text-center">Emails must match</p>
+                )}
                 <button
-                  onClick={handleEmailCheck} disabled={!isEmailValid || isChecking}
+                  onClick={handleEmailCheck} disabled={!isEmailValid || !emailsMatch || isChecking}
                   className="w-full bg-[#3b82f6] text-black p-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-white transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
                 >
                   {isChecking ? <Loader2 className="animate-spin" size={18} /> : "Verify Credentials"}
@@ -526,15 +710,36 @@ export default function WorkshopRegistration() {
                 <h1 className="text-4xl font-black uppercase italic tracking-tighter">Details Required<span className="text-[#3b82f6] text-6xl leading-none">.</span></h1>
                 <p className="text-neutral-500 text-sm font-black uppercase tracking-[0.2em] mt-2">All fields are mandatory for certification</p>
               </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-neutral-900/80 border border-white/10">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-500 mb-1">Checkout email</p>
+                  <p className="text-sm font-bold text-white break-all">{formData.email}</p>
+                  <p className="text-[10px] text-neutral-500 mt-2 leading-relaxed">To change it, go back to step 1 and enter both email fields again.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={goBackToChangeEmail}
+                  className="shrink-0 px-6 py-3 rounded-xl border border-[#3b82f6]/40 text-[#3b82f6] text-[10px] font-black uppercase tracking-widest hover:bg-[#3b82f6] hover:text-black transition-colors"
+                >
+                  Change email
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {['name', 'class', 'schoolId', 'college', 'city', 'phone'].map(field => {
-                  const displayLabels = { college: 'School / College', schoolId: 'ID Number / Roll No', name: 'Full Name', class: 'Grade / Year', phone: 'WhatsApp Number' };
+                  const displayLabels = {
+                    college: 'School / College',
+                    schoolId: 'ID Number / Roll No',
+                    name: 'Full Name',
+                    class: 'Grade / Year',
+                    phone: 'WhatsApp Number',
+                  };
                   return (
                     <div key={field} className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3b82f6] ml-2 flex items-center gap-2">
                         {displayLabels[field] || field}
                       </label>
                       <input
+                        type="text"
                         placeholder={field === 'phone' ? '91XXXXXXXXXX' : `Enter ${displayLabels[field] || field}`}
                         value={formData[field]}
                         className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
@@ -557,6 +762,20 @@ export default function WorkshopRegistration() {
           {/* STEP 3: WORKSHOP SELECTION */}
           {step === 3 && (
             <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-20">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-neutral-900/80 border border-white/10">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-500 mb-1">Checkout email</p>
+                  <p className="text-sm font-bold text-white break-all">{formData.email}</p>
+                  <p className="text-[10px] text-neutral-500 mt-2 leading-relaxed">To change it, go back to step 1 and enter both email fields again.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={goBackToChangeEmail}
+                  className="shrink-0 px-6 py-3 rounded-xl border border-[#3b82f6]/40 text-[#3b82f6] text-[10px] font-black uppercase tracking-widest hover:bg-[#3b82f6] hover:text-black transition-colors"
+                >
+                  Change email
+                </button>
+              </div>
               {/* MERCH SECTION */}
               <section>
                 <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-6">Space Merch<span className="text-[#3b82f6]">.</span></h2>
@@ -717,10 +936,28 @@ export default function WorkshopRegistration() {
                 <button onClick={() => setStep(3)} className="px-10 py-5 bg-[#3b82f6] text-black rounded-3xl font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all">Buy More Modules</button>
                 <button
                   onClick={() => {
+                    const emailKey = formData.email?.toLowerCase().trim();
+                    [
+                      'last_active_email',
+                      'registration_email',
+                      'selected_workshops',
+                      'registration_details',
+                      'tiqr_booking_id',
+                      'tiqr_booking_uid',
+                      'tiqr_participant_identification_id',
+                      'tiqr_booking_payment_url',
+                    ].forEach((k) => localStorage.removeItem(k));
+                    if (emailKey) {
+                      localStorage.removeItem(`purchase_${emailKey}`);
+                      localStorage.removeItem(`profile_${emailKey}`);
+                    }
+
                     setRegisteredItems([]);
                     setSelectedItems([]);
+                    setComboApplied(false);
                     setFormData({
                       email: '',
+                      confirmEmail: '',
                       name: '',
                       class: '',
                       schoolId: '',
@@ -758,7 +995,7 @@ export default function WorkshopRegistration() {
               )}
             </div>
             <button
-              disabled={isChecking}
+              disabled={isChecking || !isEmailValid || !emailsMatch}
               onClick={handlePayment}
               className="bg-[#3b82f6] text-black px-12 py-5 rounded-3xl font-black uppercase tracking-widest text-sm hover:bg-white transition-all flex items-center gap-3 disabled:opacity-50"
             >
