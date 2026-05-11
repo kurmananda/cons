@@ -326,143 +326,135 @@ export default function WorkshopRegistration() {
   // =========================================================
 
   const handlePayment = async () => {
+  if (selectedItems.length === 0) return;
 
-    if (selectedItems.length === 0) return;
+  setIsChecking(true);
 
-    setIsChecking(true);
+  try {
+    // Mapping of your local IDs to TiQR Ticket IDs
+    const TICKET_MAPPING = {
+      '1': 3046, // Cube Sat
+      '2': 3045, // Launch Vehicle
+      '3': 3043, // Agentic AI
+      '4': 3044, // Python ML
+      '5': 3049, // Space Merch
+      'c1': 3048, // Space Combo
+      'c2': 3047, // AI Combo
+      'c3': 3042, // Mega Combo
+      'c4': 3050  // Ultimate Combo
+    };
 
-    try {
+    // FILTER ONLY NEW ITEMS
+    const payableItems = selectedItems.filter(
+      (id) => !registeredItems.includes(id)
+    );
 
-      // FILTER ONLY NEW ITEMS
-      const payableItems =
-        selectedItems.filter(
-          id => !registeredItems.includes(id)
-        );
-
-      if (payableItems.length === 0) {
-
-        alert(
-          'You already own these modules'
-        );
-
-        setIsChecking(false);
-
-        return;
-      }
-
-      // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
-      localStorage.setItem(
-        'registration_email',
-        formData.email
-          .toLowerCase()
-          .trim()
-      );
-
-      localStorage.setItem(
-        'selected_workshops',
-        payableItems.join(',')
-      );
-
-      localStorage.setItem(
-        'registration_details',
-        JSON.stringify(formData)
-      );
-
-      // AUTO-DETECT BASE URL FROM REQUEST
-      const baseUrl = window.location.origin;
-
-      // CREATE BOOKING WITH TIQR
-      const response = await fetch(
-        '/api/tiqr',
-        {
-          method: 'POST',
-
-          headers: {
-            'Content-Type':
-              'application/json'
-          },
-
-          body: JSON.stringify({
-            first_name: formData.name.split(' ')[0] || '',
-            last_name: formData.name.split(' ').slice(1).join(' ') || '',
-            phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
-            email: formData.email.toLowerCase().trim(),
-            ticket: 3042,
-            quantity: String(payableItems.length),
-            meta_data: {
-              workshop_ids: payableItems.join(','),
-              college: formData.college,
-              is_new_registration: registeredItems.length === 0 ? 'true' : 'false'
-            },
-            callback_url: `${baseUrl}/payment-success`
-          })
-        }
-      );
-
-      const bookingData =
-        await response.json();
-
-      console.log(bookingData);
-
-      if (!response.ok) {
-
-        const bookingError =
-          bookingData.message ||
-          bookingData.detail ||
-          (Array.isArray(bookingData.non_field_errors)
-            ? bookingData.non_field_errors.join(', ')
-            : undefined) ||
-          (typeof bookingData.error === 'string'
-            ? bookingData.error
-            : undefined);
-
-        throw new Error(
-          bookingError ||
-          'Booking creation failed'
-        );
-      }
-
-      localStorage.setItem(
-        'tiqr_booking_id',
-        String(bookingData.booking?.id || '')
-      );
-      localStorage.setItem(
-        'tiqr_booking_uid',
-        bookingData.booking?.uid || ''
-      );
-      localStorage.setItem(
-        'tiqr_participant_identification_id',
-        bookingData.booking?.participant_identification_id || ''
-      );
-      localStorage.setItem(
-        'tiqr_booking_payment_url',
-        bookingData.payment?.url_to_redirect || ''
-      );
-
-      if (bookingData.payment?.url_to_redirect) {
-        window.location.href =
-          bookingData.payment.url_to_redirect;
-      } else {
-        window.location.href =
-          `/payment-success?booking_uid=${encodeURIComponent(
-            bookingData.booking?.uid || ''
-          )}&amount=${totalAmount}`;
-      }
-
-    } catch (err) {
-
-      console.log(err);
-
-      alert(
-        `Booking Error: ${err.message}`
-      );
-
-    } finally {
-
+    if (payableItems.length === 0) {
+      alert('You already own these modules');
       setIsChecking(false);
-
+      return;
     }
-  };
+
+    // DETERMINE TICKET ID AND QUANTITY
+    let finalTicketId;
+    let finalQuantity = "1";
+
+    if (activeCombo) {
+      // Use the specific Ticket ID for the Bundle
+      finalTicketId = TICKET_MAPPING[activeCombo.id];
+      finalQuantity = "1";
+    } else {
+      // If multiple individual workshops are selected (without a combo)
+      // and you want to process them in one transaction, 
+      // check if your TiQR event setup allows multiple workshops under one ticket
+      // Otherwise, we default to the first selected item or a generic workshop ticket
+      finalTicketId = TICKET_MAPPING[payableItems[0]];
+      finalQuantity = String(payableItems.length);
+    }
+
+    // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
+    localStorage.setItem(
+      'registration_email',
+      formData.email.toLowerCase().trim()
+    );
+
+    localStorage.setItem(
+      'selected_workshops',
+      payableItems.join(',')
+    );
+
+    localStorage.setItem(
+      'registration_details',
+      JSON.stringify(formData)
+    );
+
+    const baseUrl = window.location.origin;
+
+    // CREATE BOOKING WITH TIQR
+    const response = await fetch('/api/tiqr', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        first_name: formData.name.split(' ')[0] || '',
+        last_name: formData.name.split(' ').slice(1).join(' ') || '',
+        phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
+        email: formData.email.toLowerCase().trim(),
+        ticket: finalTicketId, // DYNAMIC TICKET ID
+        quantity: finalQuantity,
+        meta_data: {
+          workshop_ids: payableItems.join(','),
+          college: formData.college,
+          is_new_registration: registeredItems.length === 0 ? 'true' : 'false',
+          is_combo: activeCombo ? 'true' : 'false',
+          combo_name: activeCombo ? activeCombo.name : 'none'
+        },
+        callback_url: `${baseUrl}/payment-success`,
+      }),
+    });
+
+    const bookingData = await response.json();
+
+    if (!response.ok) {
+      const bookingError =
+        bookingData.message ||
+        bookingData.detail ||
+        (Array.isArray(bookingData.non_field_errors)
+          ? bookingData.non_field_errors.join(', ')
+          : undefined) ||
+        (typeof bookingData.error === 'string'
+          ? bookingData.error
+          : undefined);
+
+      throw new Error(bookingError || 'Booking creation failed');
+    }
+
+    localStorage.setItem('tiqr_booking_id', String(bookingData.booking?.id || ''));
+    localStorage.setItem('tiqr_booking_uid', bookingData.booking?.uid || '');
+    localStorage.setItem(
+      'tiqr_participant_identification_id',
+      bookingData.booking?.participant_identification_id || ''
+    );
+    localStorage.setItem(
+      'tiqr_booking_payment_url',
+      bookingData.payment?.url_to_redirect || ''
+    );
+
+    if (bookingData.payment?.url_to_redirect) {
+      window.location.href = bookingData.payment.url_to_redirect;
+    } else {
+      window.location.href = `/payment-success?booking_uid=${encodeURIComponent(
+        bookingData.booking?.uid || ''
+      )}&amount=${totalAmount}`;
+    }
+  } catch (err) {
+    console.error(err);
+    alert(`Booking Error: ${err.message}`);
+  } finally {
+    setIsChecking(false);
+  }
+};
 
   // =========================================================
 

@@ -251,11 +251,11 @@ export default function Home() {
               className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0A0A0A]/70 h-[min(560px,80vh)]"
             >
               <Image
-                src="/assets/image1.png"
+                src="/assets/workshops.png"
                 alt="Workshop visual"
                 fill
-                sizes="(max-width: 1024px) 100vw, 33vw"
-                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-contain"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/95 via-transparent to-transparent" />
               <div className="absolute bottom-8 left-8 right-8 text-white">
