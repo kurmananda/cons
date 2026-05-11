@@ -325,114 +325,132 @@ export default function WorkshopRegistration() {
   // ================= PAYMENT FUNCTION FIX ==================
   // =========================================================
 
- const handlePayment = async () => {
-  // 1. Initial Guard: Ensure there's actually something to process
-  if (!selectedItems || selectedItems.length === 0) {
-    alert("Please select at least one workshop or combo.");
-    return;
-  }
+  const handlePayment = async () => {
+  if (selectedItems.length === 0) return;
 
   setIsChecking(true);
 
   try {
-    // 2. Definitive Ticket Mapping
+    // Mapping of your local IDs to TiQR Ticket IDs
     const TICKET_MAPPING = {
-      '1': 3043, '2': 3044, '3': 3045, '4': 3046,
-      '5': 3042,   // Space Merch
-      'c1': 3047,  // Space Combo
-      'c2': 3048,  // AI Combo
-      'c3': 3049,  // Mega Combo
-      'c4': 3050   // Ultimate Combo
+      '1': 3046, // Cube Sat
+      '2': 3045, // Launch Vehicle
+      '3': 3043, // Agentic AI
+      '4': 3044, // Python ML
+      '5': 3049, // Space Merch
+      'c1': 3048, // Space Combo
+      'c2': 3047, // AI Combo
+      'c3': 3042, // Mega Combo
+      'c4': 3050  // Ultimate Combo
     };
 
-    // 3. Deduplicate and Filter
-    // Using Set to prevent accidental double-clicks from creating duplicate charges
-    const uniqueSelected = [...new Set(selectedItems)];
-    const payableItems = uniqueSelected.filter(id => !registeredItems.includes(id));
+    // FILTER ONLY NEW ITEMS
+    const payableItems = selectedItems.filter(
+      (id) => !registeredItems.includes(id)
+    );
 
     if (payableItems.length === 0) {
-      alert('You are already registered for all selected items.');
+      alert('You already own these modules');
       setIsChecking(false);
       return;
     }
 
-    // 4. Transform into Booking Objects
-    const bookings = payableItems.map((itemId) => {
-      const ticketId = TICKET_MAPPING[itemId];
-      if (!ticketId) throw new Error(`Unknown item ID: ${itemId}`);
+    // DETERMINE TICKET ID AND QUANTITY
+    let finalTicketId;
+    let finalQuantity = "1";
 
-      // Standardize user data
-      const nameParts = (formData.name || "").trim().split(/\s+/);
-      const firstName = nameParts[0] || "Participant";
-      const lastName = nameParts.slice(1).join(" ") || ".";
-      
-      // Strict Phone Formatting (Standard Indian +91 format)
-      const cleanPhone = formData.phone.replace(/\D/g, '').slice(-10);
-      if (cleanPhone.length < 10) throw new Error("Please enter a valid 10-digit phone number.");
+    if (activeCombo) {
+      // Use the specific Ticket ID for the Bundle
+      finalTicketId = TICKET_MAPPING[activeCombo.id];
+      finalQuantity = "1";
+    } else {
+      // If multiple individual workshops are selected (without a combo)
+      // and you want to process them in one transaction, 
+      // check if your TiQR event setup allows multiple workshops under one ticket
+      // Otherwise, we default to the first selected item or a generic workshop ticket
+      finalTicketId = TICKET_MAPPING[payableItems[0]];
+      finalQuantity = String(payableItems.length);
+    }
 
-      return {
-        first_name: firstName,
-        last_name: lastName,
-        phone_number: `+91${cleanPhone}`,
-        email: formData.email.toLowerCase().trim(),
-        ticket: ticketId,
-        quantity: 1,
-        meta_data: {
-          college: formData.college || "Not Specified",
-          internal_id: itemId,
-          is_combo: itemId.startsWith('c') ? 'true' : 'false'
-        }
-      };
-    });
+    // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
+    localStorage.setItem(
+      'registration_email',
+      formData.email.toLowerCase().trim()
+    );
 
-    // 5. API Configuration
-    const isBulk = bookings.length > 1;
-    const apiPath = isBulk 
-      ? 'https://api.tiqr.events/participant/booking/bulk' 
-      : 'https://api.tiqr.events/participant/booking/';
+    localStorage.setItem(
+      'selected_workshops',
+      payableItems.join(',')
+    );
+
+    localStorage.setItem(
+      'registration_details',
+      JSON.stringify(formData)
+    );
 
     const baseUrl = window.location.origin;
-    const requestBody = isBulk 
-      ? { bookings, callback_url: `${baseUrl}/payment-success` } 
-      : { ...bookings[0], callback_url: `${baseUrl}/payment-success` };
 
-    // 6. Network Request
-    const response = await fetch(apiPath, {
+    // CREATE BOOKING WITH TIQR
+    const response = await fetch('/api/tiqr', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        first_name: formData.name.split(' ')[0] || '',
+        last_name: formData.name.split(' ').slice(1).join(' ') || '',
+        phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
+        email: formData.email.toLowerCase().trim(),
+        ticket: finalTicketId, // DYNAMIC TICKET ID
+        quantity: finalQuantity,
+        meta_data: {
+          workshop_ids: payableItems.join(','),
+          college: formData.college,
+          is_new_registration: registeredItems.length === 0 ? 'true' : 'false',
+          is_combo: activeCombo ? 'true' : 'false',
+          combo_name: activeCombo ? activeCombo.name : 'none'
+        },
+        callback_url: `${baseUrl}/payment-success`,
+      }),
     });
 
-    const result = await response.json();
+    const bookingData = await response.json();
 
-    // 7. Comprehensive Error Catching for API Responses
     if (!response.ok) {
-      // Check if API returned a specific error message or a general failure
-      const errorMsg = result.errors 
-        ? Object.values(result.errors).flat().join(", ") 
-        : (result.message || 'Booking failed');
-      throw new Error(errorMsg);
+      const bookingError =
+        bookingData.message ||
+        bookingData.detail ||
+        (Array.isArray(bookingData.non_field_errors)
+          ? bookingData.non_field_errors.join(', ')
+          : undefined) ||
+        (typeof bookingData.error === 'string'
+          ? bookingData.error
+          : undefined);
+
+      throw new Error(bookingError || 'Booking creation failed');
     }
 
-    // 8. Secure Persistence & Redirect
-    // Handling structural differences between Bulk and Single responses
-    const finalUid = isBulk ? result.uid : (result.booking?.uid || result.uid);
-    const redirectUrl = isBulk ? result.url_to_redirect : (result.payment?.url_to_redirect || result.url_to_redirect);
+    localStorage.setItem('tiqr_booking_id', String(bookingData.booking?.id || ''));
+    localStorage.setItem('tiqr_booking_uid', bookingData.booking?.uid || '');
+    localStorage.setItem(
+      'tiqr_participant_identification_id',
+      bookingData.booking?.participant_identification_id || ''
+    );
+    localStorage.setItem(
+      'tiqr_booking_payment_url',
+      bookingData.payment?.url_to_redirect || ''
+    );
 
-    if (finalUid) localStorage.setItem('tiqr_booking_uid', finalUid);
-    localStorage.setItem('registration_email', formData.email.toLowerCase().trim());
-
-    if (redirectUrl) {
-      window.location.href = redirectUrl;
-    } else if (finalUid) {
-      window.location.href = `/payment-success?uid=${finalUid}`;
+    if (bookingData.payment?.url_to_redirect) {
+      window.location.href = bookingData.payment.url_to_redirect;
     } else {
-      throw new Error("No payment URL or UID received from server.");
+      window.location.href = `/payment-success?booking_uid=${encodeURIComponent(
+        bookingData.booking?.uid || ''
+      )}&amount=${totalAmount}`;
     }
-
   } catch (err) {
-    console.error('Payment Flow Error:', err);
-    alert(err.message || "An unexpected error occurred during checkout.");
+    console.error(err);
+    alert(`Booking Error: ${err.message}`);
   } finally {
     setIsChecking(false);
   }
