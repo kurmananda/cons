@@ -177,9 +177,9 @@ const Nav = () => {
                 transition={{ delay: 0.8, ...expoTransition }}
                 className="absolute bottom-16 flex flex-col gap-6"
               >
-                <div className="flex gap-8 items-center">
+                <div className="flex gap-8 items-center flex flex-col md:flex-row sm:flex-row">
                   {["Instagram", "LinkedIn", "YouTube"].map((social) => (
-                    <Link key={social} href="#" className="text-[10px] font-syncopate uppercase tracking-[0.5em] text-white/20 hover:text-cyan-400 hover:tracking-[0.6em] transition-all duration-500">
+                    <Link key={social} href="#" className="text-[10px] font-syncopate uppercase tracking-[0.5em] text-white/20 hover:text-cyan-400 hover:tracking-[0.6em] transition-all duration-500 ">
                       {social}
                     </Link>
                   ))}
