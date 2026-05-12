@@ -130,9 +130,14 @@ export default function WorkshopRegistration() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [registeredItems, setRegisteredItems] = useState([]);
   const [isMerchDialogOpen, setIsMerchDialogOpen] = useState(false);
-  const [merchAddress, setMerchAddress] = useState('');
+  const [merchHouseNumber, setMerchHouseNumber] = useState('');
+  const [merchLaneName, setMerchLaneName] = useState('');
+  const [merchLandmark, setMerchLandmark] = useState('');
+  const [merchCity, setMerchCity] = useState('');
+  const [merchPincode, setMerchPincode] = useState('');
   const [merchSize, setMerchSize] = useState('');
   const [merchDialogError, setMerchDialogError] = useState('');
+  const [isMerchSizeGuideOpen, setIsMerchSizeGuideOpen] = useState(false);
 
   const [comboApplied, setComboApplied] = useState(false);
 
@@ -369,6 +374,10 @@ export default function WorkshopRegistration() {
     );
 
     setComboApplied(true);
+    if (freshIds.includes('5')) {
+      setMerchDialogError('');
+      setIsMerchDialogOpen(true);
+    }
   };
 
   // --- PERSISTENCE ---
@@ -405,7 +414,11 @@ export default function WorkshopRegistration() {
               city: data.details?.city ?? '',
               phone: data.details?.phone ?? '',
             });
-            setMerchAddress(data.details?.merch_address ?? '');
+            setMerchHouseNumber(data.details?.merch_house_number ?? '');
+            setMerchLaneName(data.details?.merch_lane_name ?? '');
+            setMerchLandmark(data.details?.merch_landmark ?? '');
+            setMerchCity(data.details?.merch_city ?? '');
+            setMerchPincode(data.details?.merch_pincode ?? '');
             setMerchSize(data.details?.merch_size ?? '');
             setStep(4);
           }
@@ -460,7 +473,11 @@ export default function WorkshopRegistration() {
           city: data.details?.city ?? '',
           phone: data.details?.phone ?? '',
         });
-        setMerchAddress(data.details?.merch_address ?? '');
+        setMerchHouseNumber(data.details?.merch_house_number ?? '');
+        setMerchLaneName(data.details?.merch_lane_name ?? '');
+        setMerchLandmark(data.details?.merch_landmark ?? '');
+        setMerchCity(data.details?.merch_city ?? '');
+        setMerchPincode(data.details?.merch_pincode ?? '');
         setMerchSize(data.details?.merch_size ?? '');
 
         localStorage.setItem(
@@ -494,12 +511,35 @@ export default function WorkshopRegistration() {
   const handlePayment = async () => {
     if (selectedItems.length === 0) return;
     const isMerchSelected = selectedItems.includes('5');
-    const normalizedMerchAddress = merchAddress.trim();
+    const normalizedMerchHouseNumber = merchHouseNumber.trim();
+    const normalizedMerchLaneName = merchLaneName.trim();
+    const normalizedMerchLandmark = merchLandmark.trim();
+    const normalizedMerchCity = merchCity.trim();
+    const normalizedMerchPincode = merchPincode.trim();
     const normalizedMerchSize = merchSize.trim();
+    const isMerchPincodeNumeric = /^\d+$/.test(normalizedMerchPincode);
+    const normalizedMerchAddress = [
+      normalizedMerchHouseNumber,
+      normalizedMerchLaneName,
+      normalizedMerchLandmark,
+      normalizedMerchCity,
+      normalizedMerchPincode,
+    ].join(', ');
 
-    if (isMerchSelected && (!normalizedMerchAddress || !normalizedMerchSize)) {
+    if (
+      isMerchSelected &&
+      (
+        !normalizedMerchHouseNumber ||
+        !normalizedMerchLaneName ||
+        !normalizedMerchLandmark ||
+        !normalizedMerchCity ||
+        !normalizedMerchPincode ||
+        !isMerchPincodeNumeric ||
+        !normalizedMerchSize
+      )
+    ) {
       setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
-      alert('Merch was removed. Please add delivery address and size to buy Space Merch.');
+      alert('Merch was removed. Please fill all delivery fields, numeric pincode, and size to buy Space Merch.');
       return;
     }
 
@@ -619,6 +659,21 @@ export default function WorkshopRegistration() {
       );
 
       const { confirmEmail: _omitConfirm, ...detailsForStorage } = formData;
+      detailsForStorage.merch_house_number = isMerchSelected
+        ? normalizedMerchHouseNumber
+        : '';
+      detailsForStorage.merch_lane_name = isMerchSelected
+        ? normalizedMerchLaneName
+        : '';
+      detailsForStorage.merch_landmark = isMerchSelected
+        ? normalizedMerchLandmark
+        : '';
+      detailsForStorage.merch_city = isMerchSelected
+        ? normalizedMerchCity
+        : '';
+      detailsForStorage.merch_pincode = isMerchSelected
+        ? normalizedMerchPincode
+        : '';
       detailsForStorage.merch_address = isMerchSelected
         ? normalizedMerchAddress
         : '';
@@ -892,8 +947,24 @@ export default function WorkshopRegistration() {
                           </div>
                           <div className="space-y-2">
                             <p className="text-xs text-neutral-300 leading-relaxed break-words">
-                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Address:</span>
-                              {merchAddress.trim() || 'Not provided'}
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">House No & Name:</span>
+                              {merchHouseNumber.trim() || 'Not provided'}
+                            </p>
+                            <p className="text-xs text-neutral-300 leading-relaxed break-words">
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Lane Name:</span>
+                              {merchLaneName.trim() || 'Not provided'}
+                            </p>
+                            <p className="text-xs text-neutral-300 leading-relaxed break-words">
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Landmark:</span>
+                              {merchLandmark.trim() || 'Not provided'}
+                            </p>
+                            <p className="text-xs text-neutral-300 leading-relaxed break-words">
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">City:</span>
+                              {merchCity.trim() || 'Not provided'}
+                            </p>
+                            <p className="text-xs text-neutral-300 leading-relaxed break-words">
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Pincode:</span>
+                              {merchPincode.trim() || 'Not provided'}
                             </p>
                             <p className="text-xs text-neutral-300 leading-relaxed break-words">
                               <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Size:</span>
@@ -1119,9 +1190,14 @@ export default function WorkshopRegistration() {
                     setRegisteredItems([]);
                     setSelectedItems([]);
                     setComboApplied(false);
-                    setMerchAddress('');
+                    setMerchHouseNumber('');
+                    setMerchLaneName('');
+                    setMerchLandmark('');
+                    setMerchCity('');
+                    setMerchPincode('');
                     setMerchSize('');
                     setMerchDialogError('');
+                    setIsMerchSizeGuideOpen(false);
                     setIsMerchDialogOpen(false);
                     setFormData({
                       email: '',
@@ -1152,13 +1228,13 @@ export default function WorkshopRegistration() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80] flex items-center justify-center p-3 sm:p-4"
           >
             <motion.div
               initial={{ y: 20, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 10, opacity: 0, scale: 0.98 }}
-              className="w-full max-w-xl rounded-3xl border border-white/10 bg-[#0f0f10] p-6 sm:p-8 space-y-5"
+              className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0f0f10] p-5 sm:p-8 space-y-5"
             >
               <div>
                 <h3 className="text-2xl font-black uppercase tracking-tighter italic">
@@ -1169,20 +1245,70 @@ export default function WorkshopRegistration() {
                 </p>
               </div>
               <div className="space-y-4">
-                <textarea
-                  value={merchAddress}
-                  onChange={(e) => setMerchAddress(e.target.value)}
-                  placeholder="Delivery address"
-                  rows={3}
-                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all resize-none"
+                <input
+                  type="text"
+                  value={merchHouseNumber}
+                  onChange={(e) => setMerchHouseNumber(e.target.value)}
+                  placeholder="House Number and Name"
+                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
                 />
                 <input
                   type="text"
-                  value={merchSize}
-                  onChange={(e) => setMerchSize(e.target.value)}
-                  placeholder="Size (e.g. S, M, L, XL or size number)"
+                  value={merchLaneName}
+                  onChange={(e) => setMerchLaneName(e.target.value)}
+                  placeholder="Lane Name"
                   className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
                 />
+                <input
+                  type="text"
+                  value={merchLandmark}
+                  onChange={(e) => setMerchLandmark(e.target.value)}
+                  placeholder="Landmark"
+                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
+                />
+                <input
+                  type="text"
+                  value={merchCity}
+                  onChange={(e) => setMerchCity(e.target.value)}
+                  placeholder="City"
+                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
+                />
+                <input
+                  type="text"
+                  value={merchPincode}
+                  onChange={(e) => setMerchPincode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Pincode"
+                  inputMode="numeric"
+                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
+                />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm font-black text-white">Select Size</p>
+                    <button
+                      type="button"
+                      onClick={() => setIsMerchSizeGuideOpen(true)}
+                      className="text-[#3b82f6] text-sm font-bold hover:text-white transition-colors"
+                    >
+                      Size Chart
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setMerchSize(size)}
+                        className={`min-w-14 px-4 py-3 rounded-2xl border text-sm font-semibold transition-colors ${
+                          merchSize === size
+                            ? 'border-[#3b82f6] bg-[#3b82f6] text-black'
+                            : 'border-white/20 bg-neutral-900 text-white hover:border-[#3b82f6]/70'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {merchDialogError && (
                   <p className="text-red-400 text-[11px] font-bold uppercase tracking-widest">
                     {merchDialogError}
@@ -1195,6 +1321,7 @@ export default function WorkshopRegistration() {
                   onClick={() => {
                     setIsMerchDialogOpen(false);
                     setMerchDialogError('');
+                    setIsMerchSizeGuideOpen(false);
                     setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
                   }}
                   className="px-6 py-3 rounded-xl border border-white/20 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-colors"
@@ -1204,8 +1331,16 @@ export default function WorkshopRegistration() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!merchAddress.trim() || !merchSize.trim()) {
-                      setMerchDialogError('Address and size are mandatory.');
+                    if (
+                      !merchHouseNumber.trim() ||
+                      !merchLaneName.trim() ||
+                      !merchLandmark.trim() ||
+                      !merchCity.trim() ||
+                      !merchPincode.trim() ||
+                      !/^\d+$/.test(merchPincode.trim()) ||
+                      !merchSize.trim()
+                    ) {
+                      setMerchDialogError('All address fields, numeric pincode, and size are mandatory.');
                       setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
                       return;
                     }
@@ -1213,6 +1348,7 @@ export default function WorkshopRegistration() {
                       prev.includes('5') ? prev : [...prev, '5']
                     );
                     setMerchDialogError('');
+                    setIsMerchSizeGuideOpen(false);
                     setIsMerchDialogOpen(false);
                   }}
                   className="px-6 py-3 rounded-xl bg-[#3b82f6] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-colors"
@@ -1220,6 +1356,44 @@ export default function WorkshopRegistration() {
                   Save & Add Merch
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isMerchSizeGuideOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] flex items-center justify-center p-3 sm:p-6"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 10, opacity: 0, scale: 0.98 }}
+              className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0f0f10] p-4 sm:p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="text-xl font-black uppercase tracking-tighter italic">
+                  Merch Size Chart<span className="text-[#3b82f6]">.</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsMerchSizeGuideOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-white/20 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+              <Image
+                src="/assets/merch-size-guide.png"
+                alt="Merch size chart"
+                width={1400}
+                height={900}
+                className="w-full h-auto rounded-2xl border border-white/10"
+              />
             </motion.div>
           </motion.div>
         )}
