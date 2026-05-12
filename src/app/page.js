@@ -138,7 +138,7 @@ export default function Home() {
     {
       title: 'Cube Sat Workshop',
       price: 349,
-      desc: '20th April 2026 | Hand on experience with multiple subsystems of sattelite design and operation.',
+      desc: '20th April 2026',
       details : ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
       icon: <Satellite size={20} />,
       cat : 'space',
@@ -146,7 +146,7 @@ export default function Home() {
     {
       title: 'Launch Vehicle Workshop',
       price: 349,
-      desc: '27th April 2026 |Deep understanding of launch vehicle dynamics and mission design.',
+      desc: '27th April 2026',
       details : ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
       icon: <Rocket size={20} />,
       cat : 'space',
@@ -154,7 +154,7 @@ export default function Home() {
     {
       title: 'Agentic AI Workshop',
       price: 299,
-      desc: '28th April 2026 | Explore the fundamentals of agentic AI and its applications.',
+      desc: '28th April 2026',
       details : ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
       icon: <Cpu size={20} />,
       cat : 'tech',
@@ -162,7 +162,7 @@ export default function Home() {
     {
       title: 'Python ML Workshop',
       price: 299,
-      desc: '21st April 2026 | Training a real world model with Python and machine learning.',
+      desc: '21st April 2026',
       details : ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
       icon: <Brain size={20} />,
       cat : 'tech',
@@ -286,7 +286,7 @@ export default function Home() {
                   </div>
 
                   <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                    <span className="font-syncopate font-bold text-lg">{w.price}</span>
+                    <span className="font-syncopate font-bold text-lg">Rs. {w.price}</span>
                     <ArrowUpRight size={16} className="text-white/20 group-hover:text-cyan-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                 </motion.div>
@@ -344,6 +344,7 @@ export default function Home() {
               <h2 className="font-syncopate text-2xl mb-8 uppercase tracking-tighter leading-tight">
                 Access {selectedWorkshop.title}
               </h2>
+              <h3 className="font-syncopate text-lg text-cyan-400/80 mb-4">{selectedWorkshop.desc}</h3>
               
               <h2 className="font-syncopate text-xl mb-8 uppercase tracking-tighter leading-tight">
                 {selectedWorkshop.details.map((detail, index) => (
@@ -361,7 +362,7 @@ export default function Home() {
       </AnimatePresence>
 
       {/* --- PHOTO GALLERY (VISUAL ARCHIVES) --- */}
-      <section className="my-56 pt-10 relative z-10 border-t border-white/5 bg-[#030303]/50 backdrop-blur-3xl overflow-hidden"
+      <section className=" py-30 relative z-10 border-t border-white/5 bg-[#030303]/50 backdrop-blur-3xl overflow-hidden"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave} >
         <div className="container mx-auto px-6 text-center mb-20">
@@ -438,7 +439,7 @@ export default function Home() {
               <p className="text-sm border-l border-white/10 pl-6 italic">Established in 2007 by the Dept. of Space with complete backing from ISRO.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10">
-              {[{ label: "Established", val: "2007" }, { label: "Founding Partner", val: "ISRO / Dept. of Space" }].map((stat, i) => (
+              {[{ label: "Established", val: "2007" }, { label: "Under", val: "ISRO / Dept. of Space" }].map((stat, i) => (
                 <div key={i} className="border-l-2 border-cyan-500/40 pl-8 py-3 bg-white/[0.02] rounded-r-xl">
                   <p className="text-[10px] font-syncopate text-cyan-500/50 tracking-[0.4em] mb-3 uppercase font-black">{stat.label}</p>
                   <p className="font-syncopate text-sm tracking-widest text-white">{stat.val}</p>
@@ -447,7 +448,7 @@ export default function Home() {
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} className="flex-1 w-full aspect-[4/5] relative border border-white/10 group overflow-hidden rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-            <Image src="/assets/iist.png" alt="Campus" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-100 group-hover:opacity-60 transition-all duration-300 scale-110 group-hover:scale-100" />
+            <Image src="/assets/iist.png" alt="Campus" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-100 group-hover:opacity-80 transition-all duration-300 scale-110 group-hover:scale-100" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent opacity-80" />
           </motion.div>
         </div>
