@@ -30,6 +30,12 @@ const Nav = () => {
     { label: "CONTACT US", path: "/contact-us" },
   ];
 
+  const socialLinks = [
+    { label: "Instagram", href: "https://www.instagram.com/conscientia.iist/" },
+    { label: "LinkedIn", href: "https://in.linkedin.com/company/conscientia-iist-thiruvananthapuram" },
+    { label: "YouTube", href: "https://www.youtube.com/channel/UCx47j3_OXElUMTBbMe-jYjw" },
+  ];
+
   // The "Lando" Easing - Heavy start, smooth finish
   const expoTransition = { duration: 0.9, ease: [0.85, 0, 0.15, 1] };
 
@@ -178,9 +184,15 @@ const Nav = () => {
                 className="absolute bottom-16 flex flex-col gap-6"
               >
                 <div className="flex gap-8 items-center flex flex-col md:flex-row sm:flex-row">
-                  {["Instagram", "LinkedIn", "YouTube"].map((social) => (
-                    <Link key={social} href="#" className="text-[10px] font-syncopate uppercase tracking-[0.5em] text-white/20 hover:text-cyan-400 hover:tracking-[0.6em] transition-all duration-500 ">
-                      {social}
+                  {socialLinks.map((social) => (
+                    <Link
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] font-syncopate uppercase tracking-[0.5em] text-white/20 hover:text-cyan-400 hover:tracking-[0.6em] transition-all duration-500 "
+                    >
+                      {social.label}
                     </Link>
                   ))}
                 </div>
