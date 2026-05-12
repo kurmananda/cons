@@ -1228,13 +1228,13 @@ export default function WorkshopRegistration() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80] flex items-center justify-center p-3 sm:p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[120] flex items-start justify-center p-3 pt-24 sm:p-6 sm:pt-24 lg:pt-28"
           >
             <motion.div
               initial={{ y: 20, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 10, opacity: 0, scale: 0.98 }}
-              className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0f0f10] p-5 sm:p-8 space-y-5"
+              className="w-full max-w-2xl max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain rounded-3xl border border-white/10 bg-[#0f0f10] p-5 sm:p-8 space-y-5"
             >
               <div>
                 <h3 className="text-2xl font-black uppercase tracking-tighter italic">
@@ -1367,13 +1367,13 @@ export default function WorkshopRegistration() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] flex items-center justify-center p-3 sm:p-6"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[130] flex items-start justify-center p-3 pt-24 sm:p-6 sm:pt-24 lg:pt-28"
           >
             <motion.div
               initial={{ y: 20, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 10, opacity: 0, scale: 0.98 }}
-              className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0f0f10] p-4 sm:p-6 space-y-4"
+              className="w-full max-w-5xl max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain rounded-3xl border border-white/10 bg-[#0f0f10] p-4 sm:p-6 space-y-4"
             >
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-xl font-black uppercase tracking-tighter italic">
