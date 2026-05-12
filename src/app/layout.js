@@ -12,13 +12,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html>
-      <body>
+    <html lang="en">
+      <body className="min-h-dvh bg-black text-white antialiased">
 
         <Navbar />
-        <div className="h-[10vh] flex flex-col bg-black"></div> {/* Spacer to prevent content from being hidden behind the fixed navbar */}   
+        <div className="h-[10vh] shrink-0 bg-transparent" aria-hidden />
 
-        <main>
+        <main className="min-h-0">
           {children}
         </main>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform, AnimatePresence, } from "framer-motion";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -22,11 +22,52 @@ import {
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 
+import Hyperspeed from "./components/Hyperspeed";
+
+/** Memoized — Hyperspeed re-inits WebGL when this object identity changes (see reactbits.dev). */
+const HYPERSPEED_OPTIONS = {
+  distortion: "turbulentDistortion",
+  length: 400,
+  roadWidth: 20,
+  islandWidth: 2,
+  lanesPerRoad: 3,
+  fov: 90,
+  fovSpeedUp: 150,
+  speedUp: 2,
+  carLightsFade: 0.4,
+  totalSideLightSticks: 20,
+  lightPairsPerRoadWay: 80,
+  shoulderLinesWidthPercentage: 0.05,
+  brokenLinesWidthPercentage: 0.1,
+  brokenLinesLengthPercentage: 0.5,
+  lightStickWidth: [0.12, 0.5],
+  lightStickHeight: [1.3, 1.7],
+  movingAwaySpeed: [120, 160],
+  movingCloserSpeed: [-160, -200],
+  carLightsLength: [400 * 0.03, 400 * 0.2],
+  carLightsRadius: [0.05, 0.14],
+  carWidthPercentage: [0.3, 0.5],
+  carShiftX: [-0.8, 0.8],
+  carFloorSeparation: [0, 5],
+  colors: {
+    roadColor: 0x080808,
+    islandColor: 0x0a0a0a,
+    background: 0x000000,
+    shoulderLines: 0xffffff,
+    brokenLines: 0xffffff,
+    leftCars: [0xd856bf, 0x6750a2, 0xc247ac],
+    rightCars: [0x03b3c3, 0x0e5ea5, 0x324555],
+    sticks: 0x03b3c3,
+  },
+};
+
 export default function Home() {
   const [selectedWorkshop, setSelectedWorkshop] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const expoTransition = { duration: 0.2, ease: [0.85, 0, 0.15, 1] };
+
+  const hyperspeedEffectOptions = useMemo(() => HYPERSPEED_OPTIONS, []);
 
   // --- SCROLL LOGIC ---
 
@@ -131,10 +172,19 @@ export default function Home() {
   return (
     <main className="bg-[#050505] min-h-screen text-white selection:bg-cyan-500/30 overflow-x-hidden relative">
 
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute inset-0">
+          <Hyperspeed effectOptions={hyperspeedEffectOptions} />
+        </div>
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#050505]/45 to-[#050505]"
+          aria-hidden
+        />
+      </div>
+
       {/* --- HERO SECTION --- */}
-      <section className="relative h-screen flex flex-col items-center justify-center z-10 px-6">
-        <div className="absolute inset-0 bg-black" />
-        <div className="relative text-center space-y-10">
+      <section className="relative z-10 flex h-screen flex-col items-center justify-center px-6">
+        <div className="relative space-y-10 text-center">
           <motion.div
             initial={{ opacity: 0, letterSpacing: "1.5em" }}
             animate={{ opacity: 1, letterSpacing: "0.8em" }}
