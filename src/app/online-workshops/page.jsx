@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import {
   Check,
   ArrowRight,
@@ -128,6 +129,10 @@ export default function WorkshopRegistration() {
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [registeredItems, setRegisteredItems] = useState([]);
+  const [isMerchDialogOpen, setIsMerchDialogOpen] = useState(false);
+  const [merchAddress, setMerchAddress] = useState('');
+  const [merchSize, setMerchSize] = useState('');
+  const [merchDialogError, setMerchDialogError] = useState('');
 
   const [comboApplied, setComboApplied] = useState(false);
 
@@ -323,6 +328,16 @@ export default function WorkshopRegistration() {
   const toggleSelection = (id) => {
 
     if (registeredItems.includes(id)) return;
+    if (id === '5') {
+      const isAlreadySelected = selectedItems.includes('5');
+      if (isAlreadySelected) {
+        setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
+        return;
+      }
+      setMerchDialogError('');
+      setIsMerchDialogOpen(true);
+      return;
+    }
 
     setSelectedItems((prev) => {
 
@@ -390,6 +405,8 @@ export default function WorkshopRegistration() {
               city: data.details?.city ?? '',
               phone: data.details?.phone ?? '',
             });
+            setMerchAddress(data.details?.merch_address ?? '');
+            setMerchSize(data.details?.merch_size ?? '');
             setStep(4);
           }
         } catch (err) {
@@ -443,6 +460,8 @@ export default function WorkshopRegistration() {
           city: data.details?.city ?? '',
           phone: data.details?.phone ?? '',
         });
+        setMerchAddress(data.details?.merch_address ?? '');
+        setMerchSize(data.details?.merch_size ?? '');
 
         localStorage.setItem(
           'last_active_email',
@@ -474,6 +493,15 @@ export default function WorkshopRegistration() {
 
   const handlePayment = async () => {
     if (selectedItems.length === 0) return;
+    const isMerchSelected = selectedItems.includes('5');
+    const normalizedMerchAddress = merchAddress.trim();
+    const normalizedMerchSize = merchSize.trim();
+
+    if (isMerchSelected && (!normalizedMerchAddress || !normalizedMerchSize)) {
+      setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
+      alert('Merch was removed. Please add delivery address and size to buy Space Merch.');
+      return;
+    }
 
     if (!isEmailValid || !emailsMatch) {
       alert('Enter a valid email and matching confirmation before checkout.');
@@ -591,6 +619,12 @@ export default function WorkshopRegistration() {
       );
 
       const { confirmEmail: _omitConfirm, ...detailsForStorage } = formData;
+      detailsForStorage.merch_address = isMerchSelected
+        ? normalizedMerchAddress
+        : '';
+      detailsForStorage.merch_size = isMerchSelected
+        ? normalizedMerchSize
+        : '';
       localStorage.setItem(
         'registration_details',
         JSON.stringify(detailsForStorage)
@@ -806,15 +840,29 @@ export default function WorkshopRegistration() {
                 <div className={`relative overflow-hidden rounded-[2.5rem] border-2 transition-all duration-500 ${registeredItems.includes('5') ? 'border-green-500/50 bg-green-500/5 shadow-none' : selectedItems.includes('5') ? 'border-[#3b82f6] bg-[#3b82f6]/5 shadow-[0_0_50px_rgba(59,130,246,0.1)]' : 'border-white/5 bg-neutral-900/40'}`}>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12">
                     <div className="flex gap-4 h-64 md:h-80">
-                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center text-[10px] font-black text-white/10 uppercase tracking-widest">Front View</div>
-                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center text-[10px] font-black text-white/10 uppercase tracking-widest">Back View</div>
+                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5">
+                        <Image
+                          src="/assets/wsfront.png"
+                          alt="Space Merch front view"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5">
+                        <Image
+                          src="/assets/wsback.png"
+                          alt="Space Merch back view"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col justify-center space-y-6">
                       <div>
                         <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">{merchItem.name}</h3>
                         <p className="text-neutral-400 text-sm leading-relaxed">{merchItem.desc}</p>
                       </div>
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-3">
                         <div className="text-3xl font-black text-[#3b82f6]">₹{merchItem.price}</div>
                         <button
                           onClick={() => toggleSelection('5')}
@@ -825,6 +873,35 @@ export default function WorkshopRegistration() {
                           {registeredItems.includes('5') ? 'Purchased' : selectedItems.includes('5') ? 'Remove' : 'Add to Kit'}
                         </button>
                       </div>
+                      {selectedItems.includes('5') && !registeredItems.includes('5') && (
+                        <div className="rounded-2xl border border-[#3b82f6]/30 bg-[#3b82f6]/10 p-4 space-y-3">
+                          <div className="flex items-center justify-between gap-4">
+                            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#3b82f6]">
+                              Merch Delivery Details
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMerchDialogError('');
+                                setIsMerchDialogOpen(true);
+                              }}
+                              className="px-3 py-1.5 rounded-lg border border-[#3b82f6]/40 text-[#3b82f6] text-[9px] font-black uppercase tracking-widest hover:bg-[#3b82f6] hover:text-black transition-colors"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-xs text-neutral-300 leading-relaxed break-words">
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Address:</span>
+                              {merchAddress.trim() || 'Not provided'}
+                            </p>
+                            <p className="text-xs text-neutral-300 leading-relaxed break-words">
+                              <span className="text-neutral-500 uppercase tracking-wider text-[10px] mr-2">Size:</span>
+                              {merchSize.trim() || 'Not provided'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -975,7 +1052,7 @@ export default function WorkshopRegistration() {
                       <span className="text-slate-500 text-sm">Still confused?</span>
                       <span className="text-white font-semibold">Contact the Team</span>
                     </div>
-                    <a href='mailto:conscientiateam@gmail.com' target='_blank' className="px-6 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-lg text-sm font-medium transition-all">
+                    <a href='mailto:conscientiateamiist@gmail.com' target='_blank' className="px-6 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-lg text-sm font-medium transition-all">
                       Open Ticket
                     </a>
                   </div>
@@ -1042,6 +1119,10 @@ export default function WorkshopRegistration() {
                     setRegisteredItems([]);
                     setSelectedItems([]);
                     setComboApplied(false);
+                    setMerchAddress('');
+                    setMerchSize('');
+                    setMerchDialogError('');
+                    setIsMerchDialogOpen(false);
                     setFormData({
                       email: '',
                       confirmEmail: '',
@@ -1064,6 +1145,85 @@ export default function WorkshopRegistration() {
           )}
         </AnimatePresence>
       </main>
+
+      <AnimatePresence>
+        {isMerchDialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 10, opacity: 0, scale: 0.98 }}
+              className="w-full max-w-xl rounded-3xl border border-white/10 bg-[#0f0f10] p-6 sm:p-8 space-y-5"
+            >
+              <div>
+                <h3 className="text-2xl font-black uppercase tracking-tighter italic">
+                  Space Merch Details<span className="text-[#3b82f6]">.</span>
+                </h3>
+                <p className="text-neutral-400 text-sm mt-2">
+                  Address and merch size are required to continue with Space Merch.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <textarea
+                  value={merchAddress}
+                  onChange={(e) => setMerchAddress(e.target.value)}
+                  placeholder="Delivery address"
+                  rows={3}
+                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all resize-none"
+                />
+                <input
+                  type="text"
+                  value={merchSize}
+                  onChange={(e) => setMerchSize(e.target.value)}
+                  placeholder="Size (e.g. S, M, L, XL or size number)"
+                  className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
+                />
+                {merchDialogError && (
+                  <p className="text-red-400 text-[11px] font-bold uppercase tracking-widest">
+                    {merchDialogError}
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMerchDialogOpen(false);
+                    setMerchDialogError('');
+                    setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
+                  }}
+                  className="px-6 py-3 rounded-xl border border-white/20 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!merchAddress.trim() || !merchSize.trim()) {
+                      setMerchDialogError('Address and size are mandatory.');
+                      setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
+                      return;
+                    }
+                    setSelectedItems((prev) =>
+                      prev.includes('5') ? prev : [...prev, '5']
+                    );
+                    setMerchDialogError('');
+                    setIsMerchDialogOpen(false);
+                  }}
+                  className="px-6 py-3 rounded-xl bg-[#3b82f6] text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-colors"
+                >
+                  Save & Add Merch
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* --- FLOATING CHECKOUT --- */}
       <AnimatePresence>

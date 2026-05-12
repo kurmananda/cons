@@ -43,7 +43,7 @@ export default function ContactPage() {
 
         <div className="pt-4 border-t border-white/10">
           <p className="text-white/60 text-sm">
-            General inquiries: <span className="text-cyan-400/90">conscientia@iist.ac.in</span>
+            General inquiries: <span className="text-cyan-400/90">conscientiateamiist@gmail.com</span>
           </p>
         </div>
       </div>
