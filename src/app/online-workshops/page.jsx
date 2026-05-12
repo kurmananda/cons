@@ -177,7 +177,7 @@ export default function WorkshopRegistration() {
       id: '1',
       name: 'Cube Sat Workshop',
       price: 349,
-      desc: 'Hand on experience with multiple subsystems of sattelite design and operation.',
+      desc: 'Tentative Date: 20th April 2026. Hand on experience with multiple subsystems of sattelite design and operation.',
       details : ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
       icon: <Satellite size={20} />,
     },
@@ -185,7 +185,7 @@ export default function WorkshopRegistration() {
       id: '2',
       name: 'Launch Vehicle Workshop',
       price: 349,
-      desc: 'Deep understanding of launch vehicle dynamics and mission design.',
+      desc: 'Tentative Date: 27th April 2026. Deep understanding of launch vehicle dynamics and mission design.',
       details : ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
       icon: <Rocket size={20} />,
     },
@@ -193,7 +193,7 @@ export default function WorkshopRegistration() {
       id: '3',
       name: 'Agentic AI Workshop',
       price: 299,
-      desc: 'Explore the fundamentals of agentic AI and its applications.',
+      desc: 'Tentative Date: 28th April 2026. Explore the fundamentals of agentic AI and its applications.',
       details : ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
       icon: <Cpu size={20} />,
     },
@@ -201,7 +201,7 @@ export default function WorkshopRegistration() {
       id: '4',
       name: 'Python ML Workshop',
       price: 299,
-      desc: 'Training a real world model with Python and machine learning.',
+      desc: 'Tentative Date: 21st April 2026. Training a real world model with Python and machine learning.',
       details : ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
       icon: <Brain size={20} />,
     },
@@ -680,7 +680,7 @@ export default function WorkshopRegistration() {
               </div>
               <div className="space-y-4">
                 <input
-                  type="email" placeholder="student@university.edu" value={formData.email}
+                  type="email" placeholder="kurma@gmail.com" value={formData.email}
                   className="w-full bg-neutral-900 border border-neutral-800 p-5 rounded-2xl focus:border-[#3b82f6] outline-none text-white transition-all"
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -740,7 +740,7 @@ export default function WorkshopRegistration() {
                       </label>
                       <input
                         type="text"
-                        placeholder={field === 'phone' ? '91XXXXXXXXXX' : `Enter ${displayLabels[field] || field}`}
+                        placeholder={field === 'phone' ? '+91XXXXXXXXXX' : `Enter ${displayLabels[field] || field}`}
                         value={formData[field]}
                         className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
                         onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
