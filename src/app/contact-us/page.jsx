@@ -17,7 +17,7 @@ export default function ContactPage() {
           <ul className="space-y-4 text-white/80">
             <li className="flex flex-col">
               <span className="text-xs uppercase tracking-widest text-white/40">Chief Coordinator</span>
-              <span className="text-lg text-cyan-400/90">Niranjan Patel</span>
+              <span className="text-lg text-cyan-400/90">Niranjan Patil</span>
               <a href="tel:+919881416709" className="text-sm hover:text-white transition-colors">
                 +91 98814 16709
               </a>
@@ -25,7 +25,7 @@ export default function ContactPage() {
 
             <li className="flex flex-col">
               <span className="text-xs uppercase tracking-widest text-white/40">Workshop Head</span>
-              <span className="text-lg text-cyan-400/90">Aaryan</span>
+              <span className="text-lg text-cyan-400/90">Aryan Thakur</span>
               <a href="tel:+917518914396" className="text-sm hover:text-white transition-colors">
                 +91 751 891 4396
               </a>

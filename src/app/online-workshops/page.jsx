@@ -134,6 +134,30 @@ export default function WorkshopRegistration() {
   const [selectedWorkshop, setSelectedWorkshop] = useState(null);
   const detailsRef = useRef(null);
 
+
+  const faqs = [
+    {
+      q: "How to register?",
+      a: "Click on the workshop palette and select the workshops and/or combos and click on checkout to proceed. You will receive a registration message and the link to attend will be sent 24 hours before the workshop."
+    },
+    {
+      q: "Can I enroll in more than one workshop?",
+      a: "Yes, workshops are standalone and can be selected by the students with eligibility prerequisites."
+    },
+    {
+      q: "Workshop eligibility criteria.",
+      a: "Basic science knowledge for students from 9th standard onwards for cubesat and launch vehicles workshop. Interest based participation for students from 6th standard onwards for AI-ML and Python workshops."
+    },
+    {
+      q: "Is there any refund?",
+      a: "No refunds once registered, pre or post workshop."
+    },
+    {
+      q: "Will there be session recordings?",
+      a: "No, live attendance is mandatory for availing certificate and no recordings will be provided."
+    }
+  ];
+
   const [formData, setFormData] = useState({
     email: '',
     confirmEmail: '',
@@ -178,7 +202,7 @@ export default function WorkshopRegistration() {
       name: 'Cube Sat Workshop',
       price: 349,
       desc: 'Tentative Date: 20th April 2026. Hand on experience with multiple subsystems of sattelite design and operation.',
-      details : ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
+      details: ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
       icon: <Satellite size={20} />,
     },
     {
@@ -186,7 +210,7 @@ export default function WorkshopRegistration() {
       name: 'Launch Vehicle Workshop',
       price: 349,
       desc: 'Tentative Date: 27th April 2026. Deep understanding of launch vehicle dynamics and mission design.',
-      details : ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
+      details: ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
       icon: <Rocket size={20} />,
     },
     {
@@ -194,7 +218,7 @@ export default function WorkshopRegistration() {
       name: 'Agentic AI Workshop',
       price: 299,
       desc: 'Tentative Date: 28th April 2026. Explore the fundamentals of agentic AI and its applications.',
-      details : ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
+      details: ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
       icon: <Cpu size={20} />,
     },
     {
@@ -202,7 +226,7 @@ export default function WorkshopRegistration() {
       name: 'Python ML Workshop',
       price: 299,
       desc: 'Tentative Date: 21st April 2026. Training a real world model with Python and machine learning.',
-      details : ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
+      details: ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
       icon: <Brain size={20} />,
     },
   ];
@@ -232,7 +256,7 @@ export default function WorkshopRegistration() {
     formData.email.trim() !== '' &&
     formData.confirmEmail.trim() !== '' &&
     formData.email.trim().toLowerCase() ===
-      formData.confirmEmail.trim().toLowerCase();
+    formData.confirmEmail.trim().toLowerCase();
 
   const isStep2Valid =
     isEmailValid &&
@@ -449,188 +473,188 @@ export default function WorkshopRegistration() {
   // =========================================================
 
   const handlePayment = async () => {
-  if (selectedItems.length === 0) return;
+    if (selectedItems.length === 0) return;
 
-  if (!isEmailValid || !emailsMatch) {
-    alert('Enter a valid email and matching confirmation before checkout.');
-    return;
-  }
-
-  setIsChecking(true);
-
-  try {
-    // Mapping of your local IDs to TiQR Ticket IDs
-    // TiQR ticket IDs (same order as dashboard: ultimate → mega → space → merch → AI combo → workshops)
-    const TICKET_MAPPING = {
-      'c4': 3050, // Ultimate Combo
-      'c3': 3049, // Mega Combo
-      'c1': 3047, // Space Combo
-      '5': 3042, // Space Merch
-      'c2': 3048, // AI Combo
-      '1': 3043, // Cube Sat
-      '2': 3044, // Launch Vehicle
-      '3': 3045, // Agentic AI
-      '4': 3046, // Python ML
-    };
-
-    // FILTER ONLY NEW ITEMS
-    const payableItems = selectedItems.filter(
-      (id) => !registeredItems.includes(id)
-    );
-
-    if (payableItems.length === 0) {
-      alert('You already own these modules');
-      setIsChecking(false);
+    if (!isEmailValid || !emailsMatch) {
+      alert('Enter a valid email and matching confirmation before checkout.');
       return;
     }
 
-    const baseUrl = window.location.origin;
-    const callback_url = `${baseUrl}/payment-success`;
+    setIsChecking(true);
 
-    const participant = {
-      first_name: formData.name.split(' ')[0] || '',
-      last_name: formData.name.split(' ').slice(1).join(' ') || '',
-      phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
-      email: formData.email.toLowerCase().trim(),
-    };
+    try {
+      // Mapping of your local IDs to TiQR Ticket IDs
+      // TiQR ticket IDs (same order as dashboard: ultimate → mega → space → merch → AI combo → workshops)
+      const TICKET_MAPPING = {
+        'c4': 3050, // Ultimate Combo
+        'c3': 3049, // Mega Combo
+        'c1': 3047, // Space Combo
+        '5': 3042, // Space Merch
+        'c2': 3048, // AI Combo
+        '1': 3043, // Cube Sat
+        '2': 3044, // Launch Vehicle
+        '3': 3045, // Agentic AI
+        '4': 3046, // Python ML
+      };
 
-    const metaBase = (extra) => ({
-      college: formData.college,
-      is_new_registration: registeredItems.length === 0 ? 'true' : 'false',
-      ...extra,
-    });
+      // FILTER ONLY NEW ITEMS
+      const payableItems = selectedItems.filter(
+        (id) => !registeredItems.includes(id)
+      );
 
-    // Combo ticket only when every workshop in the bundle is still being paid for
-    // (if part of the combo is already registered, fall back to à-la-carte lines only).
-    const comboFullyPayable =
-      activeCombo &&
-      activeCombo.ids.every((id) => payableItems.includes(id));
+      if (payableItems.length === 0) {
+        alert('You already own these modules');
+        setIsChecking(false);
+        return;
+      }
 
-    const bookingLines = [];
+      const baseUrl = window.location.origin;
+      const callback_url = `${baseUrl}/payment-success`;
 
-    if (comboFullyPayable) {
-      bookingLines.push({
-        ...participant,
-        ticket: TICKET_MAPPING[activeCombo.id],
-        quantity: 1,
-        meta_data: metaBase({
-          internal_id: activeCombo.id,
-          workshop_ids: activeCombo.ids.join(','),
-          is_combo: 'true',
-          combo_name: activeCombo.name,
-        }),
+      const participant = {
+        first_name: formData.name.split(' ')[0] || '',
+        last_name: formData.name.split(' ').slice(1).join(' ') || '',
+        phone_number: `+91${formData.phone.replace(/\D/g, '').slice(-10)}`,
+        email: formData.email.toLowerCase().trim(),
+      };
+
+      const metaBase = (extra) => ({
+        college: formData.college,
+        is_new_registration: registeredItems.length === 0 ? 'true' : 'false',
+        ...extra,
       });
-      for (const id of payableItems) {
-        if (activeCombo.ids.includes(id)) continue;
+
+      // Combo ticket only when every workshop in the bundle is still being paid for
+      // (if part of the combo is already registered, fall back to à-la-carte lines only).
+      const comboFullyPayable =
+        activeCombo &&
+        activeCombo.ids.every((id) => payableItems.includes(id));
+
+      const bookingLines = [];
+
+      if (comboFullyPayable) {
         bookingLines.push({
           ...participant,
-          ticket: TICKET_MAPPING[id],
+          ticket: TICKET_MAPPING[activeCombo.id],
           quantity: 1,
           meta_data: metaBase({
-            internal_id: id,
-            workshop_ids: id,
-            is_combo: 'false',
-            combo_name: 'none',
+            internal_id: activeCombo.id,
+            workshop_ids: activeCombo.ids.join(','),
+            is_combo: 'true',
+            combo_name: activeCombo.name,
           }),
         });
+        for (const id of payableItems) {
+          if (activeCombo.ids.includes(id)) continue;
+          bookingLines.push({
+            ...participant,
+            ticket: TICKET_MAPPING[id],
+            quantity: 1,
+            meta_data: metaBase({
+              internal_id: id,
+              workshop_ids: id,
+              is_combo: 'false',
+              combo_name: 'none',
+            }),
+          });
+        }
+      } else {
+        for (const id of payableItems) {
+          bookingLines.push({
+            ...participant,
+            ticket: TICKET_MAPPING[id],
+            quantity: 1,
+            meta_data: metaBase({
+              internal_id: id,
+              workshop_ids: id,
+              is_combo: 'false',
+              combo_name: 'none',
+            }),
+          });
+        }
       }
-    } else {
-      for (const id of payableItems) {
-        bookingLines.push({
-          ...participant,
-          ticket: TICKET_MAPPING[id],
-          quantity: 1,
-          meta_data: metaBase({
-            internal_id: id,
-            workshop_ids: id,
-            is_combo: 'false',
-            combo_name: 'none',
-          }),
-        });
+
+      const requestPayload =
+        bookingLines.length > 1
+          ? { bookings: bookingLines, callback_url }
+          : { ...bookingLines[0], callback_url };
+
+      // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
+      localStorage.setItem(
+        'registration_email',
+        formData.email.toLowerCase().trim()
+      );
+
+      localStorage.setItem(
+        'selected_workshops',
+        payableItems.join(',')
+      );
+
+      const { confirmEmail: _omitConfirm, ...detailsForStorage } = formData;
+      localStorage.setItem(
+        'registration_details',
+        JSON.stringify(detailsForStorage)
+      );
+
+      const response = await fetch('/api/tiqr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestPayload),
+      });
+
+      const bookingData = await response.json();
+
+      if (!response.ok) {
+        console.error('[TiQR] booking failed', response.status, bookingData);
+        throw new Error(formatTiqrBookingError(bookingData));
       }
-    }
 
-    const requestPayload =
-      bookingLines.length > 1
-        ? { bookings: bookingLines, callback_url }
-        : { ...bookingLines[0], callback_url };
+      const usedBulk = bookingLines.length > 1;
+      const finalUid = usedBulk
+        ? bookingData.uid
+        : bookingData.booking?.uid || bookingData.uid;
+      const redirectUrl = pickTiqrPaymentUrl(bookingData);
 
-    // SAVE TO LOCALSTORAGE (TEMPORARY FOR PAYMENT FLOW)
-    localStorage.setItem(
-      'registration_email',
-      formData.email.toLowerCase().trim()
-    );
-
-    localStorage.setItem(
-      'selected_workshops',
-      payableItems.join(',')
-    );
-
-    const { confirmEmail: _omitConfirm, ...detailsForStorage } = formData;
-    localStorage.setItem(
-      'registration_details',
-      JSON.stringify(detailsForStorage)
-    );
-
-    const response = await fetch('/api/tiqr', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestPayload),
-    });
-
-    const bookingData = await response.json();
-
-    if (!response.ok) {
-      console.error('[TiQR] booking failed', response.status, bookingData);
-      throw new Error(formatTiqrBookingError(bookingData));
-    }
-
-    const usedBulk = bookingLines.length > 1;
-    const finalUid = usedBulk
-      ? bookingData.uid
-      : bookingData.booking?.uid || bookingData.uid;
-    const redirectUrl = pickTiqrPaymentUrl(bookingData);
-
-    localStorage.setItem(
-      'tiqr_booking_id',
-      String(bookingData.booking?.id || '')
-    );
-    localStorage.setItem('tiqr_booking_uid', finalUid || '');
-    localStorage.setItem(
-      'tiqr_participant_identification_id',
-      bookingData.booking?.participant_identification_id || ''
-    );
-    localStorage.setItem(
-      'tiqr_booking_payment_url',
-      redirectUrl || ''
-    );
-
-    if (redirectUrl) {
-      window.location.href = redirectUrl;
-    } else {
-      console.error(
-        '[TiQR] success but no checkout URL — refusing fake success page',
-        bookingData
+      localStorage.setItem(
+        'tiqr_booking_id',
+        String(bookingData.booking?.id || '')
       );
-      alert(
-        'Your booking was created, but we could not open the payment page from this response. Please check your email for a payment link from TiQR, or contact support. (Technical details are in the browser console.)'
+      localStorage.setItem('tiqr_booking_uid', finalUid || '');
+      localStorage.setItem(
+        'tiqr_participant_identification_id',
+        bookingData.booking?.participant_identification_id || ''
       );
+      localStorage.setItem(
+        'tiqr_booking_payment_url',
+        redirectUrl || ''
+      );
+
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        console.error(
+          '[TiQR] success but no checkout URL — refusing fake success page',
+          bookingData
+        );
+        alert(
+          'Your booking was created, but we could not open the payment page from this response. Please check your email for a payment link from TiQR, or contact support. (Technical details are in the browser console.)'
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'string'
+            ? err
+            : formatTiqrBookingError(err);
+      alert(msg);
+    } finally {
+      setIsChecking(false);
     }
-  } catch (err) {
-    console.error(err);
-    const msg =
-      err instanceof Error
-        ? err.message
-        : typeof err === 'string'
-          ? err
-          : formatTiqrBookingError(err);
-    alert(msg);
-  } finally {
-    setIsChecking(false); 
-  }
-};
+  };
 
   // =========================================================
 
@@ -834,7 +858,7 @@ export default function WorkshopRegistration() {
               {/* INDIVIDUAL */}
               <section>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter">Workshops<span className="text-[#3b82f6]">.</span></h2>
-                        <p className="text-neutral-400 text-sm leading-relaxed mb-4">(Click on the workshop to expand details below)</p>
+                <p className="text-neutral-400 text-sm leading-relaxed mb-4">(Click on the workshop to expand details below)</p>
                 <h1 className="text-xl uppercase mb-8"></h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {workshops.map(ws => {
@@ -881,11 +905,11 @@ export default function WorkshopRegistration() {
                         </div>
                         <button onClick={() => setSelectedWorkshop(null)} className="text-neutral-500 hover:text-white text-2xl leading-none">×</button>
                       </div>
-                         { selectedWorkshop.details.map((detail, index) => (
-                            <p className="text-neutral-400 text-sm mt-1 ml-4 leading-relaxed" key={index}>
-                              {detail}
-                            </p>
-                          ))}
+                      {selectedWorkshop.details.map((detail, index) => (
+                        <p className="text-neutral-400 text-sm mt-1 ml-4 leading-relaxed" key={index}>
+                          {detail}
+                        </p>
+                      ))}
                       <div className="flex items-center justify-between">
                         <div className="text-3xl font-black text-[#3b82f6]">₹{selectedWorkshop.price}</div>
                         <button
@@ -896,10 +920,73 @@ export default function WorkshopRegistration() {
                           {registeredItems.includes(selectedWorkshop.id) ? 'Enrolled' : selectedItems.includes(selectedWorkshop.id) ? 'Remove' : 'Select Workshop'}
                         </button>
                       </div>
+
                     </motion.div>
+
                   )}
                 </AnimatePresence>
               </section>
+                  <div className="min-h-screen bg-[#030712] text-slate-200 py-20 px-6 font-sans">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Header with Sub-brand styling */}
+        <div className="relative mb-16">
+          <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-blue-500 to-transparent" />
+          <h2 className="text-sm font-mono tracking-[0.3em] text-blue-400 uppercase mb-2">
+            Logistics & Support
+          </h2>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+            Workshop <span className="text-blue-500">FAQ</span>
+          </h1>
+          <p className="mt-4 text-slate-400 max-w-xl">
+            Everything you need to know about technical requirements, certification, and registration protocols for Conscientia events.
+          </p>
+        </div>
+
+        {/* Accordion List */}
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <details 
+              key={index} 
+              className="group bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-xl overflow-hidden transition-all duration-500 hover:border-blue-500/50 hover:bg-slate-900/60"
+            >
+              <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+                <span className="text-lg font-medium tracking-wide text-slate-200 group-hover:text-blue-300 transition-colors">
+                  {faq.q}
+                </span>
+                <div className="relative flex items-center justify-center w-5 h-5">
+                  <span className="absolute w-full h-0.5 bg-blue-500 rounded-full transition-transform duration-300 group-open:rotate-180"></span>
+                  <span className="absolute w-0.5 h-full bg-blue-500 rounded-full transition-transform duration-300 group-open:opacity-0"></span>
+                </div>
+              </summary>
+              
+              <div className="px-6 pb-6 pt-2">
+                <div className="p-4 rounded-lg bg-blue-950/20 border-l-2 border-blue-500/30 text-slate-400 leading-relaxed animate-in slide-in-from-top-2 duration-300">
+                  {faq.a}
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+
+        {/* Support Footer */}
+        <div className="mt-12 flex items-center justify-between p-6 border-t border-slate-800/60">
+          <div className="flex flex-col">
+            <span className="text-slate-500 text-sm">Still confused?</span>
+            <span className="text-white font-semibold">Contact the Team</span>
+          </div>
+          <a href='mailto:conscientiateam@gmail.com' target='_blank'  className="px-6 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-lg text-sm font-medium transition-all">
+            Open Ticket
+          </a>
+        </div>
+      </div>
+
+      <style jsx>{`
+        summary::-webkit-details-marker {
+          display: none;
+        }
+      `}</style>
+    </div>
             </motion.div>
           )}
 

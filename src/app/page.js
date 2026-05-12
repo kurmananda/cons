@@ -434,7 +434,7 @@ export default function Home() {
               <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter leading-tight uppercase font-black">India's Space <br /><span className="text-cyan-500">Incubator</span></h2>
             </div>
             <div className="space-y-6 text-white/40 font-light leading-relaxed text-lg md:text-xl max-w-xl">
-              <p>The IIST is India’s premier incubator for future leaders in space science, technology, and engineering.</p>
+              <p>The Indian Institute of Space Science and Technology (IIST) is India’s premier incubator for future leaders in space science, technology, and engineering.</p>
               <p>The institute is committed to excellence in teaching, learning and research. IIST fosters state-of-the-art research and development in space studies and provides a think-tank to explore new directions for the Indian Space Programme.</p>
               <p className="text-sm border-l border-white/10 pl-6 italic">Established in 2007 by the Dept. of Space with complete backing from ISRO.</p>
             </div>
