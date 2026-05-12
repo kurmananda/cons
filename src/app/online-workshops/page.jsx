@@ -926,67 +926,67 @@ export default function WorkshopRegistration() {
                   )}
                 </AnimatePresence>
               </section>
-                  <div className="min-h-screen bg-[#030712] text-slate-200 py-20 px-6 font-sans">
-      <div className="max-w-4xl mx-auto">
-        
-        {/* Header with Sub-brand styling */}
-        <div className="relative mb-16">
-          <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-blue-500 to-transparent" />
-          <h2 className="text-sm font-mono tracking-[0.3em] text-blue-400 uppercase mb-2">
-            Logistics & Support
-          </h2>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-            Workshop <span className="text-blue-500">FAQ</span>
-          </h1>
-          <p className="mt-4 text-slate-400 max-w-xl">
-            Everything you need to know about technical requirements, certification, and registration protocols for Conscientia events.
-          </p>
-        </div>
+              <div className="min-h-screen text-slate-200 py-20 px-6 font-sans">
+                <div className="max-w-4xl mx-auto">
 
-        {/* Accordion List */}
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <details 
-              key={index} 
-              className="group bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-xl overflow-hidden transition-all duration-500 hover:border-blue-500/50 hover:bg-slate-900/60"
-            >
-              <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                <span className="text-lg font-medium tracking-wide text-slate-200 group-hover:text-blue-300 transition-colors">
-                  {faq.q}
-                </span>
-                <div className="relative flex items-center justify-center w-5 h-5">
-                  <span className="absolute w-full h-0.5 bg-blue-500 rounded-full transition-transform duration-300 group-open:rotate-180"></span>
-                  <span className="absolute w-0.5 h-full bg-blue-500 rounded-full transition-transform duration-300 group-open:opacity-0"></span>
+                  {/* Header with Sub-brand styling */}
+                  <div className="relative mb-16">
+                    <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-blue-500 to-transparent" />
+                    <h2 className="text-sm font-mono tracking-[0.3em] text-blue-400 uppercase mb-2">
+                      Logistics & Support
+                    </h2>
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+                      Workshop <span className="text-blue-500">FAQ</span>
+                    </h1>
+                    <p className="mt-4 text-slate-400 max-w-xl">
+                      Everything you need to know about technical requirements, certification, and registration protocols for Conscientia events.
+                    </p>
+                  </div>
+
+                  {/* Accordion List */}
+                  <div className="space-y-4">
+                    {faqs.map((faq, index) => (
+                      <details
+                        key={index}
+                        className="group bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-xl overflow-hidden transition-all duration-500 hover:border-blue-500/50 hover:bg-slate-900/60"
+                      >
+                        <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+                          <span className="text-lg font-medium tracking-wide text-slate-200 group-hover:text-blue-300 transition-colors">
+                            {faq.q}
+                          </span>
+                          <div className="relative flex items-center justify-center w-5 h-5">
+                            <span className="absolute w-full h-0.5 bg-blue-500 rounded-full transition-transform duration-300 group-open:rotate-180"></span>
+                            <span className="absolute w-0.5 h-full bg-blue-500 rounded-full transition-transform duration-300 group-open:opacity-0"></span>
+                          </div>
+                        </summary>
+
+                        <div className="px-6 pb-6 pt-2">
+                          <div className="p-4 rounded-lg bg-blue-950/20 border-l-2 border-blue-500/30 text-slate-400 leading-relaxed animate-in slide-in-from-top-2 duration-300">
+                            {faq.a}
+                          </div>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+
+                  {/* Support Footer */}
+                  <div className="mt-12 flex items-center justify-between p-6 border-t border-slate-800/60">
+                    <div className="flex flex-col">
+                      <span className="text-slate-500 text-sm">Still confused?</span>
+                      <span className="text-white font-semibold">Contact the Team</span>
+                    </div>
+                    <a href='mailto:conscientiateam@gmail.com' target='_blank' className="px-6 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-lg text-sm font-medium transition-all">
+                      Open Ticket
+                    </a>
+                  </div>
                 </div>
-              </summary>
-              
-              <div className="px-6 pb-6 pt-2">
-                <div className="p-4 rounded-lg bg-blue-950/20 border-l-2 border-blue-500/30 text-slate-400 leading-relaxed animate-in slide-in-from-top-2 duration-300">
-                  {faq.a}
-                </div>
-              </div>
-            </details>
-          ))}
-        </div>
 
-        {/* Support Footer */}
-        <div className="mt-12 flex items-center justify-between p-6 border-t border-slate-800/60">
-          <div className="flex flex-col">
-            <span className="text-slate-500 text-sm">Still confused?</span>
-            <span className="text-white font-semibold">Contact the Team</span>
-          </div>
-          <a href='mailto:conscientiateam@gmail.com' target='_blank'  className="px-6 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-lg text-sm font-medium transition-all">
-            Open Ticket
-          </a>
-        </div>
-      </div>
-
-      <style jsx>{`
+                <style jsx>{`
         summary::-webkit-details-marker {
           display: none;
         }
       `}</style>
-    </div>
+              </div>
             </motion.div>
           )}
 
