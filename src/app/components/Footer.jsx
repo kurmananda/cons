@@ -13,7 +13,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-white/[0.06]  px-6 py-16 text-white bg-white">
+    <footer className="relative border-t border-white/[0.06] bg-gradient-to-b from-black to-[#050508] px-6 py-16 text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_100%,rgba(6,182,212,0.06),transparent_55%)]" />
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-12 md:flex-row md:items-start md:justify-between">
         <div className="max-w-sm space-y-4">
