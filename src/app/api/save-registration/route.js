@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_KEY
-);
+import { createServerSupabase } from '../_supabase-server';
 
 export async function POST(req) {
   try {
@@ -12,42 +7,46 @@ export async function POST(req) {
 
     console.log('SAVE BODY:', body);
 
-    const email = body.email || '';
+    const email = (body.email || '').trim();
 
     const newWorkshopIds = body.workshop_ids || '';
 
     const details = body.details || {};
 
+    const stage = body.stage;
+    const isPrePayment = stage === 'pre_payment';
+
     const tiqr_booking_uid =
       body.tiqr_booking_uid ||
-      details.tiqr_booking_uid || '';
+      details.tiqr_booking_uid ||
+      '';
 
     const tiqr_booking_id =
       body.tiqr_booking_id ||
-      details.tiqr_booking_id || '';
+      details.tiqr_booking_id ||
+      '';
 
     const tiqr_participant_identification_id =
       body.tiqr_participant_identification_id ||
-      details.tiqr_participant_identification_id || '';
+      details.tiqr_participant_identification_id ||
+      '';
 
     const payment_id = body.payment_id || '';
 
     const order_id = body.order_id || '';
 
-    const amount = body.amount || 0;
+    const amount = body.amount ?? 0;
 
     const registrationDetails = {
-      ...details
+      ...details,
     };
 
     if (tiqr_booking_uid) {
-      registrationDetails.tiqr_booking_uid =
-        tiqr_booking_uid;
+      registrationDetails.tiqr_booking_uid = tiqr_booking_uid;
     }
 
     if (tiqr_booking_id) {
-      registrationDetails.tiqr_booking_id =
-        tiqr_booking_id;
+      registrationDetails.tiqr_booking_id = tiqr_booking_id;
     }
 
     if (tiqr_participant_identification_id) {
@@ -59,15 +58,13 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Email missing'
+          message: 'Email missing',
         },
         { status: 400 }
       );
     }
 
-    // =========================================
-    // FETCH EXISTING USER
-    // =========================================
+    const supabase = createServerSupabase();
 
     const { data: existingUser } = await supabase
       .from('registrations')
@@ -75,9 +72,18 @@ export async function POST(req) {
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
-    // =========================================
-    // EXISTING WORKSHOPS
-    // =========================================
+    if (
+      isPrePayment &&
+      existingUser?.status === 'confirmed' &&
+      existingUser?.payment_status === 'paid'
+    ) {
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        message: 'Already paid; pre_payment not applied',
+        data: existingUser,
+      });
+    }
 
     let existingIds = [];
 
@@ -87,60 +93,40 @@ export async function POST(req) {
         : [];
     }
 
-    // =========================================
-    // NEW WORKSHOPS
-    // =========================================
-
     const incomingIds = Array.isArray(newWorkshopIds)
       ? newWorkshopIds
       : String(newWorkshopIds)
           .split(',')
-          .map(id => id.trim())
+          .map((id) => id.trim())
           .filter(Boolean);
 
-    // =========================================
-    // MERGE + REMOVE DUPLICATES
-    // =========================================
+    const finalWorkshopIds = [...new Set([...existingIds, ...incomingIds])];
 
-    const finalWorkshopIds = [
-      ...new Set([
-        ...existingIds,
-        ...incomingIds
-      ])
-    ];
+    const row = {
+      email: email.toLowerCase(),
 
-    // =========================================
-    // UPSERT USER
-    // =========================================
+      workshop_ids: finalWorkshopIds,
+
+      details: registrationDetails,
+
+      payment_id,
+
+      order_id,
+
+      amount,
+
+      status: isPrePayment ? 'pending_payment' : 'confirmed',
+
+      payment_status: isPrePayment ? 'pending' : 'paid',
+
+      updated_at: new Date().toISOString(),
+    };
 
     const { data, error } = await supabase
       .from('registrations')
-      .upsert(
-        [
-          {
-            email: email.toLowerCase(),
-
-            workshop_ids: finalWorkshopIds,
-
-            details: registrationDetails,
-
-            payment_id,
-
-            order_id,
-
-            amount,
-
-            status: 'confirmed',
-
-            payment_status: 'paid',
-
-            updated_at: new Date().toISOString()
-          }
-        ],
-        {
-          onConflict: 'email'
-        }
-      )
+      .upsert([row], {
+        onConflict: 'email',
+      })
       .select();
 
     if (error) {
@@ -149,7 +135,7 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          message: error.message
+          message: error.message,
         },
         { status: 500 }
       );
@@ -157,16 +143,15 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: true,
-      data
+      data,
     });
-
   } catch (err) {
     console.log(err);
 
     return NextResponse.json(
       {
         success: false,
-        message: err.message
+        message: err.message,
       },
       { status: 500 }
     );

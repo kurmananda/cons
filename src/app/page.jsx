@@ -209,9 +209,10 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
             transition={{ delay: 0.8 }}
-            className="text-center max-w-xl mx-auto text-md md:text-md tracking-[0.2em] uppercase leading-loose"
+            className="text-center max-w-xl mx-auto text-md md:text-md tracking-[0.2em] uppercase leading-loose items-center gap-4 flex flex-col text-white/40"
           >
             TIME FALL <br /> <span className="text-xs md:text-xs">Directed by IIST.</span>
+            <Image src="/assets/iistlogo.png" alt="Logo" width={55} height={55} className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
           </motion.p>
 
           <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 1.2, duration: 1 }} className="pt-12 flex flex-col items-center gap-6">

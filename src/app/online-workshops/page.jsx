@@ -720,6 +720,46 @@ export default function WorkshopRegistration() {
         redirectUrl || ''
       );
 
+      // Persist registration to Supabase BEFORE leaving for payment gateway.
+      // localStorage is often empty when the user returns (new tab, in-app browser, www vs apex).
+      const pendingDetails = {
+        ...detailsForStorage,
+        tiqr_booking_uid: finalUid || undefined,
+        tiqr_booking_id: String(bookingData.booking?.id || '') || undefined,
+        tiqr_participant_identification_id:
+          bookingData.booking?.participant_identification_id || undefined,
+      };
+
+      try {
+        const preSave = await fetch('/api/save-registration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stage: 'pre_payment',
+            email: formData.email.toLowerCase().trim(),
+            workshop_ids: payableItems.join(','),
+            details: pendingDetails,
+            tiqr_booking_uid: finalUid || '',
+            tiqr_booking_id: String(bookingData.booking?.id || ''),
+            tiqr_participant_identification_id:
+              bookingData.booking?.participant_identification_id || '',
+            payment_id: finalUid || '',
+            order_id: '',
+            amount: 0,
+          }),
+        });
+        const preJson = await preSave.json().catch(() => ({}));
+        if (!preSave.ok) {
+          console.error(
+            '[pre_payment save] failed',
+            preSave.status,
+            preJson?.message || preJson
+          );
+        }
+      } catch (preErr) {
+        console.error('[pre_payment save]', preErr);
+      }
+
       if (redirectUrl) {
         window.location.href = redirectUrl;
       } else {
