@@ -21,13 +21,12 @@ const STATUS_FILTERS = [
   { value: 'pending_payment', label: 'Pending payment' },
 ];
 
-const PAYMENT_FILTERS = [
-  { value: 'all', label: 'All payments' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'pending', label: 'Pending' },
-];
-
 const ADMIN_PASSWORD = 'jobless';
+
+function workshopLabels(ids) {
+  if (!ids?.length) return '—';
+  return ids.map((id) => WORKSHOP_LABELS[id] || id).join(', ');
+}
 
 function normalizeRow(row) {
   const details =
@@ -69,7 +68,6 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [paymentFilter, setPaymentFilter] = useState('all');
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
@@ -131,23 +129,22 @@ export default function AdminPage() {
       if (statusFilter !== 'all' && row.status !== statusFilter) {
         return false;
       }
-      if (paymentFilter !== 'all' && row.payment_status !== paymentFilter) {
-        return false;
-      }
       if (!q) return true;
+      const workshopText = row.workshopIds
+        .map((id) => WORKSHOP_LABELS[id] || id)
+        .join(' ');
       const haystack = [
         row.name,
         row.email,
         row.phone,
         row.status,
-        row.payment_status,
-        row.workshopIds.join(' '),
+        workshopText,
       ]
         .join(' ')
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [rows, search, statusFilter, paymentFilter]);
+  }, [rows, search, statusFilter]);
 
   if (!isUnlocked) {
     return (
@@ -208,7 +205,7 @@ export default function AdminPage() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, email, phone, status..."
+            placeholder="Search name, email, phone, workshops..."
             className="w-full pl-11 pr-4 py-3 rounded-xl bg-neutral-900 border border-neutral-800 focus:border-[#3b82f6] outline-none text-white"
           />
         </div>
@@ -218,17 +215,6 @@ export default function AdminPage() {
           className="px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-800 focus:border-[#3b82f6] outline-none text-white min-w-[160px]"
         >
           {STATUS_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={paymentFilter}
-          onChange={(e) => setPaymentFilter(e.target.value)}
-          className="px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-800 focus:border-[#3b82f6] outline-none text-white min-w-[160px]"
-        >
-          {PAYMENT_FILTERS.map((f) => (
             <option key={f.value} value={f.value}>
               {f.label}
             </option>
@@ -263,8 +249,8 @@ export default function AdminPage() {
                 onClick={() => setSelected(row)}
                 className="w-full text-left rounded-2xl border border-white/10 bg-neutral-900/60 hover:border-[#3b82f6]/40 hover:bg-neutral-900 p-4 sm:p-5 transition-colors group"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                  <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6">
+                  <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
                     <div>
                       <p className="text-[9px] uppercase tracking-widest text-neutral-500 mb-0.5">
                         Name
@@ -292,12 +278,17 @@ export default function AdminPage() {
                       >
                         {row.status}
                       </span>
-                      <span className="ml-2 text-[10px] text-neutral-500 uppercase">
-                        {row.payment_status}
-                      </span>
+                    </div>
+                    <div className="sm:col-span-2 lg:col-span-1">
+                      <p className="text-[9px] uppercase tracking-widest text-neutral-500 mb-0.5">
+                        Workshops
+                      </p>
+                      <p className="text-xs text-neutral-300 leading-snug line-clamp-2">
+                        {workshopLabels(row.workshopIds)}
+                      </p>
                     </div>
                   </div>
-                  <ChevronRight className="hidden sm:block shrink-0 text-neutral-600 group-hover:text-[#3b82f6]" />
+                  <ChevronRight className="hidden sm:block shrink-0 text-neutral-600 group-hover:text-[#3b82f6] mt-1" />
                 </div>
               </button>
             </li>
@@ -358,15 +349,11 @@ export default function AdminPage() {
 
               <section>
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3b82f6] mb-3">
-                  Payment
+                  Registration
                 </h3>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     ['Status', selected.status],
-                    ['Payment status', selected.payment_status],
-                    ['Amount', selected.amount != null ? `₹${selected.amount}` : '—'],
-                    ['Payment ID', selected.payment_id],
-                    ['Order ID', selected.order_id],
                     ['Updated', selected.updated_at],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-xl bg-black/40 border border-white/5 p-3">
