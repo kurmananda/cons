@@ -212,7 +212,7 @@ export default function Home() {
             transition={{ delay: 0.8 }}
             className="text-center max-w-xl mx-auto text-md md:text-md tracking-[0.2em] uppercase leading-loose items-center gap-4 flex flex-col text-white/40"
           >
-            TIME FALL <br /> <span className="text-xs md:text-xs">Directed by IIST.</span>
+            TIME FALL <br /> <span className="text-xs md:text-xs">Directed by Indian Institute of Space Science and Technology (IIST).</span>
             <Image src="/assets/iistlogo.png" alt="Logo" width={55} height={55} className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
           </motion.p>
 
