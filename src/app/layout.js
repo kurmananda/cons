@@ -7,7 +7,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Conscientia IIST",
-  description: "AI's impact on engineering education at IIST: A comprehensive research initiative exploring the evolving landscape of learning, skill development, and the future of engineering education in the age of AI.",
+  description: "Technical Fest 2026 of Indian Institute of Space Science and Technology",
 };
 
 export default function RootLayout({ children }) {

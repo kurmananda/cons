@@ -23,6 +23,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 
 import Hyperspeed from "./components/Hyperspeed";
+import MerchPromoNotification from "./components/MerchPromoNotification";
 
 /** Memoized — Hyperspeed re-inits WebGL when this object identity changes (see reactbits.dev). */
 const HYPERSPEED_OPTIONS = {
@@ -224,6 +225,69 @@ export default function Home() {
             </button>
           </motion.div>
         </div>
+      </section>
+
+      {/* --- MERCH PROMO STRIP --- */}
+      <section className="relative z-10 px-4 sm:px-6 -mt-8 mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.6, ease: [0.85, 0, 0.15, 1] }}
+          className="max-w-4xl mx-auto"
+        >
+          <Link
+            href="/online-workshops"
+            className="group relative flex flex-col sm:flex-row items-center gap-6 sm:gap-8 overflow-hidden rounded-[2rem] border border-cyan-500/25 bg-[#0A0A0A]/80 backdrop-blur-xl p-5 sm:p-6 hover:border-cyan-400/50 hover:shadow-[0_0_50px_rgba(6,182,212,0.2)] transition-all duration-500"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="relative flex gap-2 shrink-0">
+              <motion.div
+                whileHover={{ rotate: -3, scale: 1.05 }}
+                className="relative w-24 h-28 sm:w-28 sm:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-lg"
+              >
+                <Image
+                  src="/assets/wsfront.png"
+                  alt="Merch front"
+                  fill
+                  className="object-cover"
+                  sizes="112px"
+                />
+              </motion.div>
+              <motion.div
+                whileHover={{ rotate: 3, scale: 1.05 }}
+                className="relative w-24 h-28 sm:w-28 sm:h-32 rounded-2xl overflow-hidden border border-white/10 shadow-lg -ml-4 mt-4"
+              >
+                <Image
+                  src="/assets/wsback.png"
+                  alt="Merch back"
+                  fill
+                  className="object-cover"
+                  sizes="112px"
+                />
+              </motion.div>
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-400 mb-3">
+                <Package size={10} />
+                Limited drop
+              </span>
+              <h2 className="font-syncopate text-xl sm:text-2xl uppercase tracking-tight text-white group-hover:text-cyan-300 transition-colors">
+                Get official <span className="text-cyan-400">Space Merch</span>
+              </h2>
+              <p className="text-sm text-white/45 mt-2 max-w-md mx-auto sm:mx-0">
+                Hoodie-style kit for Conscientia 2026. Pick your size and delivery address on the registration page.
+              </p>
+            </div>
+            <div className="shrink-0 flex flex-col items-center gap-1 px-6 py-4 rounded-2xl bg-white text-black group-hover:bg-cyan-400 transition-colors duration-300">
+              <span className="font-syncopate text-2xl font-black">₹599</span>
+              <span className="font-syncopate text-[9px] uppercase tracking-[0.25em] flex items-center gap-1">
+                Register
+                <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </div>
+          </Link>
+        </motion.div>
       </section>
 
       {/* --- WORKSHOP CARTEL --- */}
@@ -454,6 +518,8 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      <MerchPromoNotification />
     </main>
   );
 }
