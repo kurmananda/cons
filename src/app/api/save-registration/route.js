@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '../_supabase-server';
+import { verifyTiqrBookingConfirmed } from '@/lib/tiqr';
 
 export async function POST(req) {
   try {
@@ -7,24 +8,25 @@ export async function POST(req) {
 
     console.log('SAVE BODY:', body);
 
+    if (body.stage === 'pre_payment') {
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        message: 'Pre-payment records are not stored. Complete payment first.',
+      });
+    }
+
     const email = (body.email || '').trim();
 
     const newWorkshopIds = body.workshop_ids || '';
 
     const details = body.details || {};
 
-    const stage = body.stage;
-    const isPrePayment = stage === 'pre_payment';
-
     const tiqr_booking_uid =
-      body.tiqr_booking_uid ||
-      details.tiqr_booking_uid ||
-      '';
+      body.tiqr_booking_uid || details.tiqr_booking_uid || '';
 
     const tiqr_booking_id =
-      body.tiqr_booking_id ||
-      details.tiqr_booking_id ||
-      '';
+      body.tiqr_booking_id || details.tiqr_booking_id || '';
 
     const tiqr_participant_identification_id =
       body.tiqr_participant_identification_id ||
@@ -37,9 +39,29 @@ export async function POST(req) {
 
     const amount = body.amount ?? 0;
 
-    const registrationDetails = {
-      ...details,
-    };
+    if (!email) {
+      return NextResponse.json(
+        { success: false, message: 'Email missing' },
+        { status: 400 }
+      );
+    }
+
+    if (tiqr_booking_uid) {
+      const { confirmed, status } =
+        await verifyTiqrBookingConfirmed(tiqr_booking_uid);
+
+      if (!confirmed) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Payment not confirmed with TiQR (status: ${status || 'unknown'}). Registration was not saved.`,
+          },
+          { status: 402 }
+        );
+      }
+    }
+
+    const registrationDetails = { ...details };
 
     if (tiqr_booking_uid) {
       registrationDetails.tiqr_booking_uid = tiqr_booking_uid;
@@ -54,16 +76,6 @@ export async function POST(req) {
         tiqr_participant_identification_id;
     }
 
-    if (!email) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Email missing',
-        },
-        { status: 400 }
-      );
-    }
-
     const supabase = createServerSupabase();
 
     const { data: existingUser } = await supabase
@@ -71,19 +83,6 @@ export async function POST(req) {
       .select('*')
       .eq('email', email.toLowerCase())
       .maybeSingle();
-
-    if (
-      isPrePayment &&
-      existingUser?.status === 'confirmed' &&
-      existingUser?.payment_status === 'paid'
-    ) {
-      return NextResponse.json({
-        success: true,
-        skipped: true,
-        message: 'Already paid; pre_payment not applied',
-        data: existingUser,
-      });
-    }
 
     let existingIds = [];
 
@@ -104,55 +103,34 @@ export async function POST(req) {
 
     const row = {
       email: email.toLowerCase(),
-
       workshop_ids: finalWorkshopIds,
-
       details: registrationDetails,
-
       payment_id,
-
       order_id,
-
       amount,
-
-      status: isPrePayment ? 'pending_payment' : 'confirmed',
-
-      payment_status: isPrePayment ? 'pending' : 'paid',
-
+      status: 'confirmed',
+      payment_status: 'paid',
       updated_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabase
       .from('registrations')
-      .upsert([row], {
-        onConflict: 'email',
-      })
+      .upsert([row], { onConflict: 'email' })
       .select();
 
     if (error) {
       console.log(error);
-
       return NextResponse.json(
-        {
-          success: false,
-          message: error.message,
-        },
+        { success: false, message: error.message },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data,
-    });
+    return NextResponse.json({ success: true, data });
   } catch (err) {
     console.log(err);
-
     return NextResponse.json(
-      {
-        success: false,
-        message: err.message,
-      },
+      { success: false, message: err.message },
       { status: 500 }
     );
   }

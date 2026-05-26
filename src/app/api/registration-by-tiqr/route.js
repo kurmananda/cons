@@ -41,6 +41,19 @@ export async function GET(req) {
       );
     }
 
+    if (
+      data.status !== 'confirmed' ||
+      data.payment_status !== 'paid'
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Registration not completed for this booking',
+        },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({ success: true, data });
   } catch (err) {
     console.error('[registration-by-tiqr]', err);
