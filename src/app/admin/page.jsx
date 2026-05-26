@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Loader2, Search, X, ChevronRight } from 'lucide-react';
+import { Loader2, Search, X, ChevronRight, Download } from 'lucide-react';
+import { downloadRegistrationsExcel } from '@/lib/export-registrations-excel';
 
 const WORKSHOP_LABELS = {
   '1': 'Cube Sat Workshop',
@@ -123,6 +124,29 @@ export default function AdminPage() {
     setLoginError('');
   };
 
+  const paidCount = useMemo(
+    () =>
+      rows.filter(
+        (r) =>
+          String(r.status).toLowerCase() === 'confirmed' &&
+          String(r.payment_status).toLowerCase() === 'paid'
+      ).length,
+    [rows]
+  );
+
+  const handleDownloadExcel = () => {
+    const paidRows = rows.filter(
+      (r) =>
+        String(r.status).toLowerCase() === 'confirmed' &&
+        String(r.payment_status).toLowerCase() === 'paid'
+    );
+    if (paidRows.length === 0) {
+      alert('No confirmed paid registrations to export.');
+      return;
+    }
+    downloadRegistrationsExcel(rows, { paidOnly: true });
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((row) => {
@@ -227,6 +251,15 @@ export default function AdminPage() {
           className="px-5 py-3 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-[#3b82f6] disabled:opacity-50"
         >
           Refresh
+        </button>
+        <button
+          type="button"
+          onClick={handleDownloadExcel}
+          disabled={loading || paidCount === 0}
+          className="px-5 py-3 rounded-xl border border-[#3b82f6]/50 text-[#3b82f6] text-[10px] font-black uppercase tracking-widest hover:bg-[#3b82f6] hover:text-black transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+        >
+          <Download size={14} />
+          Excel ({paidCount})
         </button>
       </div>
 
