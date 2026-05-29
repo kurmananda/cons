@@ -276,7 +276,7 @@ export default function Home() {
                 Get official <span className="text-cyan-400">Space Merch</span>
               </h2>
               <p className="text-sm text-white/45 mt-2 max-w-md mx-auto sm:mx-0">
-                Hoodie-style kit for Conscientia 2026. Pick your size and delivery address on the registration page.
+                Pick your size and delivery address on the registration page.
               </p>
             </div>
             <div className="shrink-0 flex flex-col items-center gap-1 px-6 py-4 rounded-2xl bg-white text-black group-hover:bg-cyan-400 transition-colors duration-300">

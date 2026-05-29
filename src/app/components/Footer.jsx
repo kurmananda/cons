@@ -6,8 +6,8 @@ const footerLinks = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
   { label: 'Workshops', href: '/online-workshops' },
-  { label: 'Events', href: '/events' },
-  { label: 'Accommodation', href: '/accommodation' },
+  { label: 'Merchandise Purchase Policy', href: 'https://canva.link/59yb0kjeuzacmby' },
+  { label: 'Workshop Purchase Policy', href: 'https://canva.link/1b6c7gn1nngkd6n' },
   { label: 'Contact', href: '/contact-us' },
 ];
 
