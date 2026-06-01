@@ -177,6 +177,7 @@ export default function WorkshopRegistration() {
     college: '',
     city: '',
     phone: '',
+    campus_ambassador_token: '',
   });
 
   const prevEmailRef = useRef('');
@@ -861,6 +862,19 @@ export default function WorkshopRegistration() {
                     </div>
                   );
                 })}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3b82f6] ml-2 flex items-center gap-2">
+                    Campus Ambassador Number(optional)
+                    <span className="text-[8px] font-normal text-neutral-500">(Optional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Enter your ambassador number"
+                    value={formData.campus_ambassador_token}
+                    className="w-full bg-neutral-900 border border-neutral-800 p-4 rounded-xl focus:border-[#3b82f6] outline-none text-white transition-all"
+                    onChange={(e) => setFormData({ ...formData, campus_ambassador_token: e.target.value })}
+                  />
+                </div>
               </div>
               <button
                 onClick={() => isPhoneValid ? setStep(3) : alert("Valid WhatsApp number required")}

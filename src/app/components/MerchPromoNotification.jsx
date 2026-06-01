@@ -65,7 +65,7 @@ export default function MerchPromoNotification() {
                   transition={{ duration: 0.35 }}
                 >
                   <Image
-                    src="/assets/wsfront.png"
+                    src="/assets/wsback.png"
                     alt="Space Merch front"
                     fill
                     className="object-cover"
@@ -78,7 +78,7 @@ export default function MerchPromoNotification() {
                   transition={{ duration: 0.35 }}
                 >
                   <Image
-                    src="/assets/wsback.png"
+                    src="/assets/wsfront.png"
                     alt="Space Merch back"
                     fill
                     className="object-cover"
