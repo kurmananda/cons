@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Lock,
   ChevronRight,
+  Download,
 } from 'lucide-react';
 
 import { createClient } from '@supabase/supabase-js';
@@ -249,6 +250,14 @@ export default function WorkshopRegistration() {
     desc: 'Official Conscientia 2026 exclusive merchandise.',
   };
 
+  const summerSchoolItem = {
+    id: '6',
+    name: 'Summer School',
+    price: 499,
+    desc: 'Immersive summer learning program with advanced space science and AI courses.',
+    ticketCode: '3062',
+  };
+
   const combos = [
     { id: 'c1', name: 'Space Combo', ids: ['1', '2'], price: 649 },
     { id: 'c2', name: 'AI Combo', ids: ['3', '4'], price: 549 },
@@ -302,6 +311,7 @@ export default function WorkshopRegistration() {
     const allPossibleItems = [
       ...workshops,
       merchItem,
+      summerSchoolItem,
     ];
 
     const itemsToPayFor = selectedItems.filter(
@@ -344,6 +354,8 @@ export default function WorkshopRegistration() {
       setIsMerchDialogOpen(true);
       return;
     }
+
+
 
     setSelectedItems((prev) => {
 
@@ -553,7 +565,7 @@ export default function WorkshopRegistration() {
 
     try {
       // Mapping of your local IDs to TiQR Ticket IDs
-      // TiQR ticket IDs (same order as dashboard: ultimate → mega → space → merch → AI combo → workshops)
+      // TiQR ticket IDs (same order as dashboard: ultimate → mega → space → merch → AI combo → workshops → summer school)
       const TICKET_MAPPING = {
         'c4': 3050, // Ultimate Combo
         'c3': 3049, // Mega Combo
@@ -564,6 +576,7 @@ export default function WorkshopRegistration() {
         '2': 3044, // Launch Vehicle
         '3': 3045, // Agentic AI
         '4': 3046, // Python ML
+        '6': 3062, // Summer School
       };
 
       // FILTER ONLY NEW ITEMS
@@ -905,11 +918,14 @@ export default function WorkshopRegistration() {
               </div>
               {/* MERCH SECTION */}
               <section>
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-6">Space Merch<span className="text-[#3b82f6]">.</span></h2>
-                <div className={`relative overflow-hidden rounded-[2.5rem] border-2 transition-all duration-500 ${registeredItems.includes('5') ? 'border-green-500/50 bg-green-500/5 shadow-none' : selectedItems.includes('5') ? 'border-[#3b82f6] bg-[#3b82f6]/5 shadow-[0_0_50px_rgba(59,130,246,0.1)]' : 'border-white/5 bg-neutral-900/40'}`}>
+                <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-3xl font-black italic uppercase tracking-tighter">Space Merch<span className="text-[#8b5cf6]">.</span></h2>
+                  <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#3b82f6] text-[9px] font-black uppercase tracking-widest text-white">Exclusive</div>
+                </div>
+                <div className={`relative overflow-hidden rounded-[2.5rem] border-2 transition-all duration-500 bg-gradient-to-br ${registeredItems.includes('5') ? 'border-green-500/50 from-green-500/10 to-green-500/5 shadow-none' : selectedItems.includes('5') ? 'border-[#8b5cf6] from-[#8b5cf6]/15 to-[#3b82f6]/15 shadow-[0_0_60px_rgba(139,92,246,0.25)]' : 'border-[#8b5cf6]/30 from-[#8b5cf6]/8 to-[#3b82f6]/8'}`}>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12">
-                    <div className="flex gap-4 h-64 md:h-80">
-                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5">
+                    <div className="flex gap-4 h-48 md:h-56">
+                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-[#8b5cf6]/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
                         <Image
                           src="/assets/wsfront.png"
                           alt="Space Merch front view"
@@ -917,7 +933,7 @@ export default function WorkshopRegistration() {
                           className="object-cover"
                         />
                       </div>
-                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5">
+                      <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-[#8b5cf6]/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
                         <Image
                           src="/assets/wsback.png"
                           alt="Space Merch back view"
@@ -932,20 +948,20 @@ export default function WorkshopRegistration() {
                         <p className="text-neutral-400 text-sm leading-relaxed">{merchItem.desc}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="text-3xl font-black text-[#3b82f6]">₹{merchItem.price}</div>
+                        <div className="text-3xl font-black bg-gradient-to-r from-[#ec4899] to-[#f97316] bg-clip-text text-transparent">₹{merchItem.price}</div>
                         <button
                           onClick={() => toggleSelection('5')}
                           disabled={registeredItems.includes('5')}
-                          className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 ${registeredItems.includes('5') ? 'bg-green-500/20 text-green-500' : selectedItems.includes('5') ? 'bg-[#3b82f6] text-black' : 'bg-white text-black hover:bg-[#3b82f6]'}`}
+                          className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 ${registeredItems.includes('5') ? 'bg-green-500/20 text-green-500' : selectedItems.includes('5') ? 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-black' : 'bg-gradient-to-r from-[#ec4899] to-[#f97316] text-white hover:shadow-[0_0_20px_rgba(236,72,153,0.5)]'}`}
                         >
                           {registeredItems.includes('5') ? <Lock size={18} /> : selectedItems.includes('5') ? <Check size={18} /> : <ShoppingCart size={18} />}
                           {registeredItems.includes('5') ? 'Purchased' : selectedItems.includes('5') ? 'Remove' : 'Add to Kit'}
                         </button>
                       </div>
                       {selectedItems.includes('5') && !registeredItems.includes('5') && (
-                        <div className="rounded-2xl border border-[#3b82f6]/30 bg-[#3b82f6]/10 p-4 space-y-3">
+                        <div className="rounded-2xl border border-[#ec4899]/30 bg-[#ec4899]/10 p-4 space-y-3">
                           <div className="flex items-center justify-between gap-4">
-                            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#3b82f6]">
+                            <p className="text-[10px] font-black uppercase tracking-[0.25em] bg-gradient-to-r from-[#ec4899] to-[#f97316] bg-clip-text text-transparent">
                               Merch Delivery Details
                             </p>
                             <button
@@ -954,7 +970,7 @@ export default function WorkshopRegistration() {
                                 setMerchDialogError('');
                                 setIsMerchDialogOpen(true);
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-[#3b82f6]/40 text-[#3b82f6] text-[9px] font-black uppercase tracking-widest hover:bg-[#3b82f6] hover:text-black transition-colors"
+                              className="px-3 py-1.5 rounded-lg border border-[#ec4899]/40 text-[#ec4899] text-[9px] font-black uppercase tracking-widest hover:bg-gradient-to-r hover:from-[#ec4899] hover:to-[#f97316] hover:text-white transition-colors"
                             >
                               Edit
                             </button>
@@ -987,6 +1003,49 @@ export default function WorkshopRegistration() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* SUMMER SCHOOL SECTION */}
+              <section>
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-6">Summer School<span className="text-[#3b82f6]">.</span></h2>
+                <div className={`relative overflow-hidden rounded-[2.5rem] border-2 transition-all duration-500 ${registeredItems.includes('6') ? 'border-green-500/50 bg-green-500/5 shadow-none' : selectedItems.includes('6') ? 'border-[#3b82f6] bg-[#3b82f6]/5 shadow-[0_0_50px_rgba(59,130,246,0.1)]' : 'border-white/5 bg-neutral-900/40'}`}>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12">
+                    <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5 h-48 md:h-56">
+                      <Image
+                        src="/assets/wsfront.png"
+                        alt="Summer School"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">{summerSchoolItem.name}</h3>
+                        <p className="text-neutral-400 text-sm leading-relaxed">{summerSchoolItem.desc}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl font-black text-[#3b82f6]">₹{summerSchoolItem.price}</div>
+                        <button
+                          onClick={() => toggleSelection('6')}
+                          disabled={registeredItems.includes('6')}
+                          className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 ${registeredItems.includes('6') ? 'bg-green-500/20 text-green-500' : selectedItems.includes('6') ? 'bg-[#3b82f6] text-black' : 'bg-white text-black hover:bg-[#3b82f6]'}`}
+                        >
+                          {registeredItems.includes('6') ? <Lock size={18} /> : selectedItems.includes('6') ? <Check size={18} /> : <ShoppingCart size={18} />}
+                          {registeredItems.includes('6') ? 'Enrolled' : selectedItems.includes('6') ? 'Remove' : 'Enroll Now'}
+                        </button>
+                      </div>
+                      <a
+                        href="/assets/summer_brochure.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border transition-all group w-fit font-black uppercase tracking-widest text-[10px] ${registeredItems.includes('6') ? 'border-green-500/30 bg-green-500/10 text-green-500' : selectedItems.includes('6') ? 'border-[#3b82f6] bg-[#3b82f6]/20 text-[#3b82f6] hover:bg-[#3b82f6]/30' : 'border-white/10 bg-neutral-900/40 hover:bg-neutral-900/60 text-neutral-300 hover:text-white'}`}
+                      >
+                        <Download size={12} className="group-hover:translate-y-0.5 transition-transform" />
+                        View Brochure
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -1168,7 +1227,7 @@ export default function WorkshopRegistration() {
               <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 space-y-6">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#3b82f6]">Your Dashboard</h3>
                 <div className="space-y-3">
-                  {[...workshops, merchItem].filter(item => registeredItems.includes(item.id)).map(item => (
+                  {[...workshops, merchItem, summerSchoolItem].filter(item => registeredItems.includes(item.id)).map(item => (
                     <div key={item.id} className="flex justify-between items-center p-5 bg-black/40 rounded-2xl border border-white/5 group hover:border-green-500/30 transition-all">
                       <div className="flex items-center gap-4">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
