@@ -16,7 +16,8 @@ import {
   Laptop,
   Package,
   Star,
-  X
+  X,
+  BookOpen // <-- ADD THIS
 } from "lucide-react";
 
 import useEmblaCarousel from "embla-carousel-react";
@@ -118,6 +119,24 @@ export default function Home() {
       })
     ]
   );
+  const summerSchoolCartel = [
+    {
+      title: 'Online Summer School on Quantum Communications and Electronic Systems',
+      subtitle: 'QCES 2026',
+      duration: '2 sessions every weekend',
+      dates: '16th July 2026',
+      price: 499,
+      desc: 'Learn how quantum innovations are transforming security, communication, and precision systems.',
+      highlights: [
+        'A summer school to unravel the tangled links with electronics through the world of quantum.',
+        'Learn through expert-led sessions and interactive discussions, projects.',
+        'Attend insightful guest lectures by researchers and industry professionals.'
+      ],
+      brochureUrl: '/assets/summer_brochure.pdf',
+      registrationUrl: '/online-workshops',
+    }
+  ];
+
 
   const handleMouseEnter = useCallback(() => {
     emblaApi?.plugins().autoplay.stop();
@@ -140,33 +159,33 @@ export default function Home() {
       title: 'Cube Sat Workshop',
       price: 349,
       desc: '21st June 2026',
-      details : ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
+      details: ['1. End to end concepts of Cubesat design', '2. Learn from experts who have worked on in-flight satellites.', '3. Understand mission design and space fundamentals'],
       icon: <Satellite size={20} />,
-      cat : 'space',
+      cat: 'space',
     },
     {
       title: 'Launch Vehicle Workshop',
       price: 349,
       desc: '28th June 2026',
-      details : ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
+      details: ['1. End to end concepts of Launch Vehicles', '2. Understand mission design and space fundamentals', '3. Explore propulsion, staging, and flight dynamics basics'],
       icon: <Rocket size={20} />,
-      cat : 'space',
+      cat: 'space',
     },
     {
       title: 'Agentic AI Workshop',
       price: 299,
       desc: '20th June 2026',
-      details : ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
+      details: ['1. Explore the basics of prompt engineering', '2. Optimize AI usage for maximum productivity', '3. Hands on learning with AI agents.'],
       icon: <Cpu size={20} />,
-      cat : 'tech',
+      cat: 'tech',
     },
     {
       title: 'Python ML Workshop',
       price: 299,
       desc: '27th June 2026',
-      details : ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
+      details: ['1. Explore the basics of python and machine learning', '2. Understand concepts with application focused learning', '3. Develop industry focused skills.'],
       icon: <Brain size={20} />,
-      cat : 'tech',
+      cat: 'tech',
     },
   ];
 
@@ -289,7 +308,117 @@ export default function Home() {
           </Link>
         </motion.div>
       </section>
+      {/* --- SUMMER SCHOOL CARTEL --- */}
+      <section className="py-24 relative z-10 border-t border-white/5 bg-[#050505]/30">
+        <div className="container mx-auto px-6 md:px-20 relative z-10">
 
+          {/* Section Header */}
+          <div className="mb-16">
+            <motion.div
+              initial={{ x: -80, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={expoTransition}
+              className="space-y-4"
+            >
+              <span className="font-mono text-[10px] text-cyan-500 tracking-[0.6em] uppercase font-black">// Quantam summer school</span>
+              <h2 className="font-syncopate text-4xl md:text-6xl tracking-tighter uppercase leading-none">
+                Summer School
+              </h2>
+            </motion.div>
+          </div>
+
+          {summerSchoolCartel.map((school, idx) => (
+            <div key={idx} className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-12 items-center bg-[#0A0A0A]/40 border border-white/5 rounded-[2.5rem] p-6 md:p-10 backdrop-blur-xl hover:border-cyan-500/20 transition-all duration-500 shadow-2xl">
+
+              {/* Left Side: Square Asset Cover */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="relative aspect-square w-full rounded-[2rem] overflow-hidden border border-white/10 group bg-black"
+              >
+                <Image
+                  src="/assets/QCES_WhatsApp.png"  // Replace with your asset path (e.g., square render or graphic)
+                  alt={school.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+
+                {/* Floating Program Banner Inside Image */}
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-[9px] font-black uppercase tracking-[0.25em] text-cyan-400 backdrop-blur-md">
+                    <BookOpen size={12} />
+                    {school.duration}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Right Side: Details & Multi-Action Interface */}
+              <div className="flex flex-col h-full justify-between space-y-8 lg:space-y-4">
+                <div className="space-y-4">
+                  <div className="flex flex-wrap justify-between items-start gap-4">
+                    <div>
+                      <span className="block font-mono text-[10px] text-cyan-500 tracking-widest uppercase mb-1">{school.subtitle}</span>
+                      <h3 className="font-syncopate text-2xl md:text-3xl tracking-wide uppercase text-white leading-snug">{school.title}</h3>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="block font-mono text-[9px] text-white/40 uppercase tracking-widest">Tuition Fee</span>
+                      <span className="font-syncopate font-black text-2xl text-cyan-400">₹{school.price}</span>
+                    </div>
+                  </div>
+
+                  <p className="font-mono text-xs text-white/50 tracking-wider leading-relaxed uppercase border-l-2 border-cyan-500/30 pl-4 py-1">
+                    Timeline: {school.dates}
+                  </p>
+
+                  <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-2xl font-light pt-2">
+                    {school.desc}
+                  </p>
+
+                  {/* Program Core Highlights */}
+                  <div className="pt-4 space-y-3">
+                    <h4 className="font-syncopate text-[10px] uppercase tracking-[0.3em] text-white/40">// Program Deliverables</h4>
+                    <ul className="space-y-2">
+                      {school.highlights.map((item, hIdx) => (
+                        <li key={hIdx} className="flex items-start gap-3 text-xs md:text-sm text-white/80">
+                          <span className="text-cyan-400 mt-0.5 shrink-0">▪</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Actions Panel */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/5">
+                  <Link
+                    href={school.registrationUrl}
+                    className="flex-1 group relative flex items-center justify-center gap-3 bg-white px-8 py-4 rounded-2xl overflow-hidden shadow-xl transition-all duration-300"
+                  >
+                    <span className="relative z-10 font-syncopate text-xs tracking-widest text-black font-black uppercase">Apply Now</span>
+                    <ArrowUpRight size={16} className="relative z-10 text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <div className="absolute inset-0 bg-cyan-400 translate-y-[101%] group-hover:translate-y-0 transition-transform duration-400 ease-[0.85,0,0.15,1]" />
+                  </Link>
+
+                  <a
+                    href={school.brochureUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 group flex items-center justify-center gap-3 bg-white/[0.03] border border-white/10 hover:border-cyan-500/40 hover:bg-cyan-500/5 px-8 py-4 rounded-2xl transition-all duration-300 text-white/80 hover:text-cyan-400"
+                  >
+                    <span className="font-syncopate text-xs tracking-widest uppercase font-bold">View Brochure</span>
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          ))}
+
+        </div>
+      </section>
       {/* --- WORKSHOP CARTEL --- */}
       <section className="min-h-[70vh] py-24 relative z-10 flex items-center">
         <div className="container mx-auto px-6 md:px-20 relative z-10">
@@ -324,7 +453,7 @@ export default function Home() {
                   transition={{ delay: index * 0.05 }}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
-                  onClick={() => {setSelectedWorkshop(w)}}
+                  onClick={() => { setSelectedWorkshop(w) }}
                   whileHover={{ scale: 1.02, rotateX: -5, rotateY: 5 }}
                   className={`group relative h-[150px] cursor-pointer bg-[#0A0A0A]/60 border ${w.highlight ? 'border-cyan-500/30' : 'border-white/5'} rounded-3xl p-6 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all`}
                 >
@@ -410,7 +539,7 @@ export default function Home() {
                 Access {selectedWorkshop.title}
               </h2>
               <h3 className="font-syncopate text-lg text-cyan-400/80 mb-4">{selectedWorkshop.desc}</h3>
-              
+
               <h2 className="font-syncopate text-xl mb-8 uppercase tracking-tighter leading-tight">
                 {selectedWorkshop.details.map((detail, index) => (
                   <p key={index} className="text-white/50 font-mono text-sm uppercase tracking-[0.3em]">

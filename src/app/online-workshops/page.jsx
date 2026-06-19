@@ -23,6 +23,70 @@ import { createClient } from '@supabase/supabase-js';
 import { details } from 'framer-motion/client';
 
 
+// --- REGISTRATION DEADLINES & CONFIGS ---
+// Set the specific closing timestamps (ISO format) for each item.
+// If the current time passes this timestamp, registration locks and the cost hides.
+const DEADLINES = {
+  '1': '2026-06-20T15:30:00Z', // Cube Sat
+  '2': '2026-06-27T15:30:00Z', // Launch Vehicle
+  '3': '2026-06-19T15:30:00Z', // Agentic AI
+  '4': '2026-06-26T15:30:00Z', // Python ML
+  '6': '2026-07-15T00:00:00Z', // Summer School
+
+  // Space Merch
+  '5': '2026-06-30T14:00:00Z',
+
+  'c1': '2026-06-20T15:30:00Z', // Space Combo
+  'c2': '2026-06-19T15:30:00Z', // AI Combo
+  'c3': '2026-06-19T15:30:00Z', // Mega Combo
+  'c4': '2026-06-19T15:30:00Z', // Ultimate Combo
+};
+
+// React hook to handle automatic dynamic live timer down to the exact second
+function useCountdown(itemId) {
+  const [timeLeft, setTimeLeft] = useState('');
+  const [isClosed, setIsClosed] = useState(false);
+
+  useEffect(() => {
+    const deadlineStr = DEADLINES[itemId];
+    if (!deadlineStr) return;
+
+    const targetTime = new Date(deadlineStr).getTime();
+    let intervalId = null;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const difference = targetTime - now;
+
+      if (difference <= 0) {
+        setIsClosed(true);
+        setTimeLeft('Closed');
+        if (intervalId) clearInterval(intervalId);
+      } else {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        if (days > 0) {
+          setTimeLeft(`${days}d ${hours}h left`);
+        } else {
+          setTimeLeft(`${hours}h ${minutes}m ${seconds}s left`);
+        }
+        setIsClosed(false);
+      }
+    };
+
+    updateTimer();
+    intervalId = setInterval(updateTimer, 1000);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [itemId]);
+
+  return { timeLeft, isClosed };
+}
+
 
 // --- INITIALIZE SUPABASE ---
 const supabase = createClient(
@@ -119,7 +183,133 @@ function pickTiqrPaymentUrl(data) {
 
   return '';
 }
+// Subcomponent for handling Combo Item buttons & text
+function ComboPriceAndAction({ combo, registeredItems, alreadyOwnsAll, selectCombo }) {
+  const { timeLeft, isClosed } = useCountdown(combo.id);
 
+  return (
+    <div className="w-full flex-1 flex flex-col justify-end mt-2">
+      <div className="flex justify-between items-center mb-3">
+        <div className="text-[#3b82f6] font-black text-xl">
+          {isClosed ? 'Unavailable' : `₹${combo.price}`}
+        </div>
+        {!isClosed && (
+          <div className="text-[10px] font-mono bg-blue-500/10 text-[#3b82f6] px-2 py-0.5 rounded border border-blue-500/10">
+            {timeLeft}
+          </div>
+        )}
+      </div>
+      <button
+        disabled={alreadyOwnsAll || isClosed}
+        onClick={() => selectCombo(combo.ids)}
+        className="w-full py-2.5 bg-neutral-800 disabled:opacity-20 hover:bg-[#3b82f6] hover:text-black rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+      >
+        {alreadyOwnsAll ? 'Owned' : isClosed ? 'Registration Closed' : 'Apply Combo'}
+      </button>
+    </div>
+  );
+}
+// Subcomponent to safely handle expanded workshop view details and its timer hook
+function ExpandedWorkshopDetails({ selectedWorkshop, setSelectedWorkshop, toggleSelection, registeredItems, selectedItems }) {
+  // Safe to call hook at the top level because this component only mounts when selectedWorkshop exists
+  const { timeLeft: detailsTimeLeft, isClosed: isDetailsClosed } = useCountdown(selectedWorkshop.id);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="mt-8 p-8 bg-neutral-900/50 rounded-[2rem] border border-white/5"
+    >
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="p-4 bg-[#3b82f6] text-black rounded-2xl">{selectedWorkshop.icon}</div>
+          <div>
+            <h3 className="text-2xl font-black italic uppercase tracking-tighter">{selectedWorkshop.name}</h3>
+            <p className="text-neutral-400 text-sm mt-1 leading-relaxed">{selectedWorkshop.desc}</p>
+          </div>
+        </div>
+        <button onClick={() => setSelectedWorkshop(null)} className="text-neutral-500 hover:text-white text-2xl leading-none">×</button>
+      </div>
+
+      {selectedWorkshop.details.map((detail, index) => (
+        <p className="text-neutral-400 text-sm mt-1 ml-4 leading-relaxed" key={index}>{detail}</p>
+      ))}
+
+      <div className="flex items-center justify-between mt-4 border-t border-white/5 pt-4">
+        <div>
+          <div className="text-3xl font-black text-[#3b82f6]">
+            {isDetailsClosed ? 'Registrations Closed' : `₹${selectedWorkshop.price}`}
+          </div>
+          {!isDetailsClosed && !registeredItems.includes(selectedWorkshop.id) && (
+            <div className="text-xs font-mono text-neutral-500 mt-0.5">{detailsTimeLeft}</div>
+          )}
+        </div>
+        <button
+          onClick={() => { toggleSelection(selectedWorkshop.id); setSelectedWorkshop(null); }}
+          disabled={registeredItems.includes(selectedWorkshop.id) || isDetailsClosed}
+          className={`px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${registeredItems.includes(selectedWorkshop.id)
+            ? 'bg-green-500/20 text-green-500 border border-green-500/20'
+            : isDetailsClosed
+              ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+              : selectedItems.includes(selectedWorkshop.id)
+                ? 'bg-red-500 text-white hover:bg-red-600' // Styling when item is currently in cart
+                : 'bg-[#3b82f6] text-black hover:bg-white' // Default styling
+            }`}
+        >
+          {registeredItems.includes(selectedWorkshop.id)
+            ? 'Enrolled'
+            : isDetailsClosed
+              ? 'Registration Closed'
+              : selectedItems.includes(selectedWorkshop.id)
+                ? 'Remove Workshop' // Text when item is currently in cart
+                : 'Select Workshop'}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+// Subcomponent for handling individual workshop grid cards
+function IndividualWorkshopCard({ ws, registeredItems, selectedItems, selectedWorkshop, setSelectedWorkshop, toggleSelection }) {
+  const isRegistered = registeredItems.includes(ws.id);
+  const isOpen = selectedWorkshop?.id === ws.id;
+  const { timeLeft, isClosed } = useCountdown(ws.id);
+
+  return (
+    <div
+      onClick={() => setSelectedWorkshop(isOpen ? null : ws)}
+      className={`w-full h-full flex flex-col justify-between cursor-pointer p-6 rounded-[2rem] border-2 transition-all ${isRegistered
+        ? 'border-green-500/20 bg-green-500/5 shadow-[0_0_35px_rgba(34,197,94,0.25)]'
+        : isOpen
+          ? 'border-[#3b82f6] bg-[#3b82f6]/10 shadow-[0_0_40px_rgba(59,130,246,0.3)]'
+          : selectedItems.includes(ws.id)
+            ? 'border-[#3b82f6] bg-[#3b82f6]/5'
+            : 'border-white/5 bg-neutral-900/40'
+        }`}
+    >
+      <div>
+        <div className="flex justify-between items-start mb-6">
+          <div className={`p-3 rounded-xl ${isRegistered ? 'bg-green-500/20 text-green-500' : isOpen ? 'bg-[#3b82f6] text-black shadow-[0_0_20px_rgba(59,130,246,0.3)]' : selectedItems.includes(ws.id) ? 'bg-[#3b82f6] text-black' : 'bg-neutral-800'}`}>{ws.icon}</div>
+          {isRegistered ? <Lock size={18} className="text-green-500" /> : selectedItems.includes(ws.id) && <Check size={18} className="text-[#3b82f6]" />}
+        </div>
+        <p className="text-neutral-400 text-sm leading-relaxed mb-4">{isOpen ? 'Details open' : '(Details below)'}</p>
+        <h3 className="font-black italic uppercase tracking-tighter text-lg mb-1">{ws.name}</h3>
+      </div>
+
+      <div className="flex flex-col gap-1 mt-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-xs font-black text-neutral-500 uppercase">
+            {isClosed ? 'Registrations Closed' : isRegistered ? 'Enrolled' : `₹${ws.price}`}
+          </div>
+          {isOpen && <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3b82f6]">Details Open</span>}
+        </div>
+        {!isClosed && !isRegistered && (
+          <div className="text-[9px] font-mono text-neutral-500 tracking-wider mt-1">{timeLeft}</div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function WorkshopRegistration() {
 
   // --- STATE MANAGEMENT ---
@@ -254,7 +444,7 @@ export default function WorkshopRegistration() {
     id: '6',
     name: 'Summer School',
     price: 499,
-    desc: 'Immersive summer learning program with advanced space science and AI courses.',
+    desc: 'A summer school to unravel the tangled links with electronics through the world of quantum.',
     ticketCode: '3062',
   };
 
@@ -1013,12 +1203,12 @@ export default function WorkshopRegistration() {
                 <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-6">Summer School<span className="text-[#3b82f6]">.</span></h2>
                 <div className={`relative overflow-hidden rounded-[2.5rem] border-2 transition-all duration-500 ${registeredItems.includes('6') ? 'border-green-500/50 bg-green-500/5 shadow-none' : selectedItems.includes('6') ? 'border-[#3b82f6] bg-[#3b82f6]/5 shadow-[0_0_50px_rgba(59,130,246,0.1)]' : 'border-white/5 bg-neutral-900/40'}`}>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12">
-                    <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5 h-48 md:h-56">
+                    <div className="flex-1 relative rounded-2xl overflow-hidden bg-black/40 border border-white/5 h-48">
                       <Image
-                        src="/assets/wsfront.png"
+                        src="/assets/summer.png"
                         alt="Summer School"
                         fill
-                        className="object-cover"
+                        className="object-fill"
                       />
                     </div>
                     <div className="flex flex-col justify-center space-y-6">
@@ -1054,22 +1244,19 @@ export default function WorkshopRegistration() {
               {/* COMBOS */}
               <section>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">Bundles<span className="text-[#3b82f6]">.</span></h2>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {combos.map(combo => {
                     const alreadyOwnsAll = combo.ids.every(id => registeredItems.includes(id));
                     return (
                       <div key={combo.id} className="p-6 rounded-[2rem] bg-neutral-900 border border-white/5 flex flex-col justify-between hover:border-[#3b82f6]/40 transition-colors">
                         <h4 className="font-black italic uppercase tracking-tighter text-lg">{combo.name}</h4>
-                        <div className="mt-6">
-                          <div className="text-[#3b82f6] font-black text-xl mb-3">₹{combo.price}</div>
-                          <button
-                            disabled={alreadyOwnsAll}
-                            onClick={() => selectCombo(combo.ids)}
-                            className="w-full py-2.5 bg-neutral-800 disabled:opacity-20 hover:bg-[#3b82f6] hover:text-black rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
-                          >
-                            {alreadyOwnsAll ? 'Owned' : 'Apply Combo'}
-                          </button>
-                        </div>
+                        <ComboPriceAndAction
+                          combo={combo}
+                          registeredItems={registeredItems}
+                          alreadyOwnsAll={alreadyOwnsAll}
+                          selectCombo={selectCombo}
+                        />
                       </div>
                     );
                   })}
@@ -1082,68 +1269,29 @@ export default function WorkshopRegistration() {
                 <p className="text-neutral-400 text-sm leading-relaxed mb-4">(Click on the workshop to expand details below)</p>
                 <h1 className="text-xl uppercase mb-8"></h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {workshops.map(ws => {
-                    const isRegistered = registeredItems.includes(ws.id);
-                    const isOpen = selectedWorkshop?.id === ws.id;
-                    return (
-                      <div
-                        key={ws.id}
-                        onClick={() => setSelectedWorkshop(isOpen ? null : ws)}
-                        className={`cursor-pointer p-6 rounded-[2rem] border-2 transition-all ${isRegistered ? 'border-green-500/20 bg-green-500/5 shadow-[0_0_35px_rgba(34,197,94,0.25)]' : isOpen ? 'border-[#3b82f6] bg-[#3b82f6]/10 shadow-[0_0_40px_rgba(59,130,246,0.3)]' : selectedItems.includes(ws.id) ? 'border-[#3b82f6] bg-[#3b82f6]/5' : 'border-white/5 bg-neutral-900/40'}`}
-                      >
-                        <div className="flex justify-between items-start mb-6">
-                          <div className={`p-3 rounded-xl ${isRegistered ? 'bg-green-500/20 text-green-500' : isOpen ? 'bg-[#3b82f6] text-black shadow-[0_0_20px_rgba(59,130,246,0.3)]' : selectedItems.includes(ws.id) ? 'bg-[#3b82f6] text-black' : 'bg-neutral-800'}`}>{ws.icon}</div>
-                          {isRegistered ? <Lock size={18} className="text-green-500" /> : selectedItems.includes(ws.id) && <Check size={18} className="text-[#3b82f6]" />}
-                        </div>
-                        <p className="text-neutral-400 text-sm leading-relaxed mb-4">{isOpen ? 'Details open' : '(Details below)'}</p>
-                        <h3 className="font-black italic uppercase tracking-tighter text-lg mb-1">{ws.name}</h3>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="text-xs font-black text-neutral-500 uppercase">{isRegistered ? 'Enrolled' : `₹${ws.price}`}</div>
-                          {isOpen && <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3b82f6]">Details Open</span>}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {workshops.map(ws => (
+                    <IndividualWorkshopCard
+                      key={ws.id}
+                      ws={ws}
+                      registeredItems={registeredItems}
+                      selectedItems={selectedItems}
+                      selectedWorkshop={selectedWorkshop}
+                      setSelectedWorkshop={setSelectedWorkshop}
+                      toggleSelection={toggleSelection}
+                    />
+                  ))}
                 </div>
 
                 {/* WORKSHOP DETAILS */}
                 <AnimatePresence>
                   {selectedWorkshop && (
-                    <motion.div
-                      ref={detailsRef}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="mt-8 p-8 bg-neutral-900/50 rounded-[2rem] border border-white/5"
-                    >
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-[#3b82f6] text-black rounded-2xl">{selectedWorkshop.icon}</div>
-                          <div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter">{selectedWorkshop.name}</h3>
-                            <p className="text-neutral-400 text-sm mt-1 leading-relaxed">{selectedWorkshop.desc}</p>
-                          </div>
-                        </div>
-                        <button onClick={() => setSelectedWorkshop(null)} className="text-neutral-500 hover:text-white text-2xl leading-none">×</button>
-                      </div>
-                      {selectedWorkshop.details.map((detail, index) => (
-                        <p className="text-neutral-400 text-sm mt-1 ml-4 leading-relaxed" key={index}>
-                          {detail}
-                        </p>
-                      ))}
-                      <div className="flex items-center justify-between">
-                        <div className="text-3xl font-black text-[#3b82f6]">₹{selectedWorkshop.price}</div>
-                        <button
-                          onClick={() => { toggleSelection(selectedWorkshop.id); setSelectedWorkshop(null); }}
-                          disabled={registeredItems.includes(selectedWorkshop.id)}
-                          className={`px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${registeredItems.includes(selectedWorkshop.id) ? 'bg-green-500/20 text-green-500 border border-green-500/20' : selectedItems.includes(selectedWorkshop.id) ? 'bg-red-500 text-white' : 'bg-[#3b82f6] text-black hover:bg-white'}`}
-                        >
-                          {registeredItems.includes(selectedWorkshop.id) ? 'Enrolled' : selectedItems.includes(selectedWorkshop.id) ? 'Remove' : 'Select Workshop'}
-                        </button>
-                      </div>
-
-                    </motion.div>
-
+                    <ExpandedWorkshopDetails
+                      selectedWorkshop={selectedWorkshop}
+                      setSelectedWorkshop={setSelectedWorkshop}
+                      toggleSelection={toggleSelection}
+                      registeredItems={registeredItems}
+                      selectedItems={selectedItems} 
+                    />
                   )}
                 </AnimatePresence>
               </section>
@@ -1371,11 +1519,10 @@ export default function WorkshopRegistration() {
                         key={size}
                         type="button"
                         onClick={() => setMerchSize(size)}
-                        className={`min-w-14 px-4 py-3 rounded-2xl border text-sm font-semibold transition-colors ${
-                          merchSize === size
-                            ? 'border-[#3b82f6] bg-[#3b82f6] text-black'
-                            : 'border-white/20 bg-neutral-900 text-white hover:border-[#3b82f6]/70'
-                        }`}
+                        className={`min-w-14 px-4 py-3 rounded-2xl border text-sm font-semibold transition-colors ${merchSize === size
+                          ? 'border-[#3b82f6] bg-[#3b82f6] text-black'
+                          : 'border-white/20 bg-neutral-900 text-white hover:border-[#3b82f6]/70'
+                          }`}
                       >
                         {size}
                       </button>
