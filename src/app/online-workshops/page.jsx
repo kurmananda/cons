@@ -34,12 +34,12 @@ const DEADLINES = {
   '6': '2026-07-15T00:00:00Z', // Summer School
 
   // Space Merch
-  '5': '2026-06-30T14:00:00Z',
+  '5': '2026-07-15T00:00:00Z',
 
   'c1': '2026-06-20T15:30:00Z', // Space Combo
   'c2': '2026-06-19T15:30:00Z', // AI Combo
   'c3': '2026-06-19T15:30:00Z', // Mega Combo
-  'c4': '2026-06-19T15:30:00Z', // Ultimate Combo
+  'c4': '2026-07-15T00:00:00Z', // QCES + MERCH Combo
 };
 
 // React hook to handle automatic dynamic live timer down to the exact second
@@ -452,7 +452,7 @@ export default function WorkshopRegistration() {
     { id: 'c1', name: 'Space Combo', ids: ['1', '2'], price: 649 },
     { id: 'c2', name: 'AI Combo', ids: ['3', '4'], price: 549 },
     { id: 'c3', name: 'Mega Combo', ids: ['1', '2', '3', '4'], price: 1149 },
-    { id: 'c4', name: 'Ultimate Combo', ids: ['1', '2', '3', '4', '5'], price: 1699 },
+    { id: 'c4', name: 'QCES + MERCH Combo', ids: ['5', '6'], price: 999 },
   ];
 
   // --- VALIDATIONS ---
@@ -530,16 +530,35 @@ export default function WorkshopRegistration() {
 
   }, [selectedItems, registeredItems, activeCombo]);
 
+  const [isSummerComboPopupOpen, setIsSummerComboPopupOpen] = useState(false);
+
   // --- SELECTION HANDLERS ---
   const toggleSelection = (id) => {
 
     if (registeredItems.includes(id)) return;
-    if (id === '5') {
-      const isAlreadySelected = selectedItems.includes('5');
-      if (isAlreadySelected) {
-        setSelectedItems((prev) => prev.filter((itemId) => itemId !== '5'));
+
+    // Summer School
+    if (id === '6') {
+      const alreadySelected = selectedItems.includes('6');
+
+      if (alreadySelected) {
+        setSelectedItems(prev => prev.filter(item => item !== '6'));
         return;
       }
+
+      setIsSummerComboPopupOpen(true);
+      return;
+    }
+
+    // Merch
+    if (id === '5') {
+      const isAlreadySelected = selectedItems.includes('5');
+
+      if (isAlreadySelected) {
+        setSelectedItems(prev => prev.filter(item => item !== '5'));
+        return;
+      }
+
       setMerchDialogError('');
       setIsMerchDialogOpen(true);
       return;
@@ -755,9 +774,9 @@ export default function WorkshopRegistration() {
 
     try {
       // Mapping of your local IDs to TiQR Ticket IDs
-      // TiQR ticket IDs (same order as dashboard: ultimate → mega → space → merch → AI combo → workshops → summer school)
+      // TiQR ticket IDs (same order as dashboard: QCES+MERCH → mega → space → merch → AI combo → workshops → summer school)
       const TICKET_MAPPING = {
-        'c4': 3050, // Ultimate Combo
+        'c4': 3050, // QCES + MERCH Combo
         'c3': 3049, // Mega Combo
         'c1': 3047, // Space Combo
         '5': 3042, // Space Merch
@@ -1245,8 +1264,8 @@ export default function WorkshopRegistration() {
               <section>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8">Bundles<span className="text-[#3b82f6]">.</span></h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {combos.map(combo => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                  {[combos[3]].map(combo => {
                     const alreadyOwnsAll = combo.ids.every(id => registeredItems.includes(id));
                     return (
                       <div key={combo.id} className="p-6 rounded-[2rem] bg-neutral-900 border border-white/5 flex flex-col justify-between hover:border-[#3b82f6]/40 transition-colors">
@@ -1264,37 +1283,7 @@ export default function WorkshopRegistration() {
               </section>
 
               {/* INDIVIDUAL */}
-              <section>
-                <h2 className="text-2xl font-black italic uppercase tracking-tighter">Workshops<span className="text-[#3b82f6]">.</span></h2>
-                <p className="text-neutral-400 text-sm leading-relaxed mb-4">(Click on the workshop to expand details below)</p>
-                <h1 className="text-xl uppercase mb-8"></h1>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {workshops.map(ws => (
-                    <IndividualWorkshopCard
-                      key={ws.id}
-                      ws={ws}
-                      registeredItems={registeredItems}
-                      selectedItems={selectedItems}
-                      selectedWorkshop={selectedWorkshop}
-                      setSelectedWorkshop={setSelectedWorkshop}
-                      toggleSelection={toggleSelection}
-                    />
-                  ))}
-                </div>
 
-                {/* WORKSHOP DETAILS */}
-                <AnimatePresence>
-                  {selectedWorkshop && (
-                    <ExpandedWorkshopDetails
-                      selectedWorkshop={selectedWorkshop}
-                      setSelectedWorkshop={setSelectedWorkshop}
-                      toggleSelection={toggleSelection}
-                      registeredItems={registeredItems}
-                      selectedItems={selectedItems} 
-                    />
-                  )}
-                </AnimatePresence>
-              </section>
               <div className="min-h-screen text-slate-200 py-20 px-6 font-sans">
                 <div className="max-w-4xl mx-auto">
 
@@ -1442,7 +1431,57 @@ export default function WorkshopRegistration() {
           )}
         </AnimatePresence>
       </main>
+      <AnimatePresence>
+        {isSummerComboPopupOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[125] flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-3xl bg-[#0f0f10] border border-white/10 p-8"
+            >
+              <h3 className="text-2xl font-black uppercase italic tracking-tighter">
+                Upgrade to Combo?
+              </h3>
 
+              <p className="mt-4 text-neutral-400 leading-relaxed">
+                Get the <span className="text-[#3b82f6] font-bold">QCES + Merch Combo</span> for
+                <span className="text-white font-bold"> ₹999 </span>
+                instead of purchasing only the Summer School.
+              </p>
+
+              <div className="mt-8 flex gap-3">
+                <button
+                  onClick={() => {
+                    setSelectedItems(prev =>
+                      prev.includes('6') ? prev : [...prev, '6']
+                    );
+                    setIsSummerComboPopupOpen(false);
+                  }}
+                  className="flex-1 py-3 rounded-xl border border-white/20 text-white font-black uppercase tracking-widest text-xs hover:bg-white hover:text-black transition"
+                >
+                  No Thanks
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSummerComboPopupOpen(false);
+                    selectCombo(['5', '6']);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-[#3b82f6] text-black font-black uppercase tracking-widest text-xs hover:bg-white transition"
+                >
+                  Upgrade
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isMerchDialogOpen && (
           <motion.div
@@ -1631,7 +1670,7 @@ export default function WorkshopRegistration() {
               <p className="text-4xl font-black italic tracking-tighter">₹{totalAmount}</p>
               {!activeCombo && qualifyingCombo && (
                 <button onClick={() => selectCombo(qualifyingCombo.ids)} className="mt-1 flex items-center gap-1.5 text-[#3b82f6] text-[9px] font-black uppercase tracking-tighter group">
-                  <Sparkles size={10} className="group-hover:rotate-12 transition-transform" /> Optimize for {qualifyingCombo.name}?
+                  <Sparkles size={10} className="group-hover:rotate-12 transition-transform" /> Upgrade to {qualifyingCombo.name}?
                 </button>
               )}
             </div>
