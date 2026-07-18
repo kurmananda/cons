@@ -22,11 +22,18 @@ const Nav = () => {
   }, [isMenuOpen]);
 
   const navLinks = [
+    { label: "HOME", path: "/" },
     { label: "ABOUT", path: "/about" },
     { label: "WORKSHOPS", path: "/online-workshops" },
     { label: "EVENTS", path: "/events" },
     { label: "ACCOMMODATION", path: "/accommodation" },
     { label: "CONTACT US", path: "/contact-us" },
+  ];
+
+  const socialLinks = [
+    { label: "Instagram", href: "https://www.instagram.com/conscientia.iist/" },
+    { label: "LinkedIn", href: "https://in.linkedin.com/company/conscientia-iist-thiruvananthapuram" },
+    { label: "YouTube", href: "https://www.youtube.com/channel/UCx47j3_OXElUMTBbMe-jYjw" },
   ];
 
   // The "Lando" Easing - Heavy start, smooth finish
@@ -35,10 +42,10 @@ const Nav = () => {
   return (
     <>
       {/* --- Sleek Floating Navbar (Glassmorphism, No Border) --- */}
-      <nav className={`fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-[1400px] z-[100] transition-all duration-700 rounded-3xl flex items-center justify-between px-10 ${
+      <nav className={`fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-[1400px] z-[100] transition-all duration-700 rounded-3xl flex items-center justify-between px-6 md:px-10 border border-transparent ${
         scrolled 
-          ? "h-16 bg-black/40 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.4)]" 
-          : "h-24 bg-transparent"
+          ? "h-16 border-white/[0.06] bg-black/55 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]" 
+          : "h-20 md:h-24 bg-black/20 backdrop-blur-md border-white/[0.04]"
       }`}>
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
@@ -46,7 +53,7 @@ const Nav = () => {
           whileHover={{ scale: 1.1, rotate: -5 }}
         >
           <Link href="/" className="block">
-            <Image src="/assets/logo.svg" alt="Logo" width={45} height={45} className="w-10 h-10 object-contain drop-shadow-2xl" />
+            <Image src="/assets/logo.svg" alt="Logo" width={45} height={45} className="w-10 h-10 rounded-sm object-contain drop-shadow-2xl" />
           </Link>
         </motion.div>
 
@@ -115,7 +122,7 @@ const Nav = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={expoTransition}
-              className="w-full md:w-1/2 h-full bg-[#030303] flex flex-col justify-center px-10 md:px-24 relative"
+              className="relative flex h-full w-full flex-col justify-center border-l border-white/[0.06] bg-[#030303] px-10 md:w-1/2 md:px-24"
             >
               {/* Dynamic Glow */}
               <motion.div 
@@ -176,10 +183,16 @@ const Nav = () => {
                 transition={{ delay: 0.8, ...expoTransition }}
                 className="absolute bottom-16 flex flex-col gap-6"
               >
-                <div className="flex gap-8 items-center">
-                  {["Instagram", "LinkedIn", "YouTube"].map((social) => (
-                    <Link key={social} href="#" className="text-[10px] font-syncopate uppercase tracking-[0.5em] text-white/20 hover:text-cyan-400 hover:tracking-[0.6em] transition-all duration-500">
-                      {social}
+                <div className="flex gap-8 items-center flex flex-col md:flex-row sm:flex-row">
+                  {socialLinks.map((social) => (
+                    <Link
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] font-syncopate uppercase tracking-[0.5em] text-white/20 hover:text-cyan-400 hover:tracking-[0.6em] transition-all duration-500 "
+                    >
+                      {social.label}
                     </Link>
                   ))}
                 </div>
